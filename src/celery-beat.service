@@ -1,0 +1,16 @@
+[Unit]
+Description=Celery Beat Service
+After=network.target redis.service celery-worker.service
+Requires=celery-worker.service
+
+[Service]
+User=comeng
+Group=comeng
+WorkingDirectory=/home/comeng/Projects/web200ok
+Environment="PATH=/home/comeng/Projects/web200ok/.venv/bin"
+ExecStart=/home/comeng/Projects/web200ok/.venv/bin/celery -A config beat -l info
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

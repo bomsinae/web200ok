@@ -1,0 +1,15 @@
+[Unit]
+Description=Celery Worker Service
+After=network.target redis.service
+
+[Service]
+User=comeng
+Group=comeng
+WorkingDirectory=/home/comeng/Projects/web200ok
+Environment="PATH=/home/comeng/Projects/web200ok/.venv/bin"
+ExecStart=/home/comeng/Projects/web200ok/.venv/bin/celery -A config worker -l info -c 4
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

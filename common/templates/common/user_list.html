@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <div class="h5">User</div>
+</div>
+
+<div>
+  <div class="d-none d-lg-block">
+    <div class="row article-list-head py-2 m-0 rounded">
+      <div class="col-lg-4">
+        <div class="row">
+          <div class="col text-nowrap">사용자</div>
+        </div>
+      </div>
+      <div class="col-lg-8">
+        <div class="row">
+          <div class="col text-nowrap text-center">텔레그램 ID</div>
+          <div class="col text-nowrap text-center">활성</div>
+          <div class="col text-nowrap text-center">최근로그인</div>
+          <div class="col text-nowrap text-center">등록일시</div>
+          <div class="col-2 text-nowrap text-center">설정</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% if object_list %}
+  {% for object in object_list %}
+  <div class="row py-2 px-lg-0 m-0 border-bottom article-list rounded align-items-center position-relative">
+    <div class="col-lg-4 col-md-12 col-sm-12 px-0">
+      <div class="row m-0">
+        <div class="col">{{ object.username }}</div>
+      </div>
+    </div>
+    <div class="col-lg-8 col-md-12 col-sm-12 px-0">
+      <div class="row justify-content-between m-0">
+        <div class="col text-center">{{ object.first_name|default:"-" }}</div>
+        <div class="col text-lg-center">
+          {% if object.is_active %}
+          <span data-feather="check-circle"></span>
+          {% else %}
+          <span data-feather="x"></span>
+          {% endif %}
+        </div>
+        <div class="col text-center d-none d-lg-block">
+          <div class="create-date" data-toggle="create_date" data-placement="top">
+            {{ object.last_login|date:"Y-m-d H:i" }}
+          </div>
+        </div>
+        <div class="col text-center d-none d-lg-block">
+          <div class="create-date" data-toggle="create_date" data-placement="top">
+            {{ object.date_joined|date:"Y-m-d H:i" }}
+          </div>
+        </div>
+        <div class="col-2 text-center">
+          {% if object.username == request.user.username or request.user.is_staff %}
+          <a href="{% url 'common:user_update' object.id %}">
+            <span data-feather="settings"></span>
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="py-1 mx-1">등록된 사용자가 없습니다.</div>
+  {% endif %}
+</div>
+{% endblock content %}

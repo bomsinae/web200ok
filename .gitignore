@@ -1,0 +1,9 @@
+.venv
+*.pyc
+__pycache__
+logs/
+db.sqlite3
+.env
+*.log
+*_test.py
+last_positions.txt

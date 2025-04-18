@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <div class="h5">사용자 삭제</div>
+</div>
+<div class="mb-3">
+  <p>
+    사용자: {{ object.username }}
+  </p>
+</div>
+<div class="my-3">
+  <form action="" method="post">
+    {% csrf_token %}
+    <button type="submit" value="submit" class="btn btn-warning">삭제하기</button>
+  </form>
+</div>
+{% endblock content %}

@@ -1,0 +1,158 @@
+body {
+  font-size: .975rem;
+}
+
+.footer {
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 60px;
+
+  background-color: #ffffff;
+}
+
+.feather {
+  width: 16px;
+  height: 16px;
+}
+
+/*
+ * Sidebar
+ */
+
+.sidebar {
+  position: fixed;
+  top: 50px !important;
+  /* rtl:raw:
+  right: 0;
+  */
+  bottom: 0;
+  /* rtl:remove */
+  left: 0;
+  z-index: 100;
+  /* Behind the navbar */
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+@media (max-width: 767.98px) {
+  .sidebar {
+    top: 5rem;
+  }
+}
+
+.sidebar-sticky {
+  /* height: calc(100vh - 48px); */
+  overflow-x: hidden;
+  overflow-y: auto;
+  /* Scrollable contents if viewport is shorter than content. */
+}
+
+.sidebar .nav-link {
+  font-weight: 500;
+  color: #333;
+}
+
+.sidebar .nav-link .feather {
+  margin-right: 4px;
+  color: #727272;
+}
+
+.sidebar .nav-link.active {
+  color: #f96705;
+  font-weight: bold;
+}
+
+.sidebar .nav-link:hover .feather,
+.sidebar .nav-link.active .feather {
+  color: inherit;
+}
+
+.sidebar-heading {
+  font-size: .75rem;
+  /* font-weight: bold; */
+}
+
+/*
+ * Navbar
+ */
+
+.navbar-brand {
+  padding-top: .75rem;
+  padding-bottom: .75rem;
+  background-color: rgba(0, 0, 0, .25);
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .25);
+}
+
+.navbar .navbar-toggler {
+  top: .25rem;
+  right: 1rem;
+}
+
+.navbar {
+  padding: .75rem 1rem;
+}
+
+
+/* 페이지네이션 스타일 */
+.page-item.active .page-link {
+  z-index: 3;
+  color: #fff;
+  background-color: #4e5a67;
+  border-color: #4e5a67;
+}
+
+.page-link:hover .page-link:focus {
+  z-index: 2;
+  color: #4e5a67;
+  text-decoration: none;
+  background-color: #e9ecef;
+  border-color: #dee2e6;
+}
+
+.page-link {
+  position: relative;
+  display: block;
+  padding: 0.5rem 0.75rem;
+  margin-left: -1px;
+  line-height: 1.25;
+  color: #4e5a67;
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+}
+
+
+/* 게시판 리스트 헤드 */
+.article-list-head {
+  background-color: #ececec;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+
+.article-list:active {
+  background-color: #f2f2f2;
+}
+
+/* lg 이상일 때만 호버 색깔 바뀌게 */
+/* 모바일로 볼 때는 호버 안되게 */
+@media (min-width: 992px) {
+  .article-list:hover {
+    background-color: #f2f2f2;
+  }
+}
+
+#chartContainer {
+  position: relative;
+}
+
+#loadingSpinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  /* 이미지 위에 겹치도록 우선순위 지정 */
+}
+
+a {
+  text-decoration: none;
+}

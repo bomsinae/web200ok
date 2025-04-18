@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <div class="h5">
+    HTTPs
+  </div>
+</div>
+<div>
+  <div class="d-none d-lg-block">
+    <div class="row article-list-head py-2 m-0 rounded">
+      <div class="col-lg-8">
+        <div class="row">
+          <div class="col-3 px-3">라벨</div>    
+          <div class="col-9">URL</div>    
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="row">
+          <div class="col text-center text-nowrap">키워드</div>
+          <div class="col text-center text-nowrap">최대응답시간</div>
+          <div class="col text-center text-nowrap">사용</div>
+          <div class="col-3 text-nowrap text-center">등록일</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% if http_list %}
+  {% for http in http_list %}
+  <div class="row p-2 px-lg-0 m-0 border-bottom article-list rounded-lg align-items-center position-relative">
+    <!-- 모바일 디바이스용 링크, 화면이 커지면 반응 안함. -->
+    <a href="{% url 'monitor:http_update' http.id %}?page={{ request.GET.page }}&kw={{ request.GET.kw }}" class="d-block d-lg-none stretched-link"></a>
+    <div class="col-lg-8 col-md-12 col-sm-12 px-0 px-lg-3">
+      <div class="row">
+        <div class="col-3 px-3">
+          <a href="{% url 'monitor:http_update' http.id %}?page={{ request.GET.page }}&kw={{ request.GET.kw }}" 
+             class="text-dark">
+            {{ http.label }}
+          </a>
+        </div>
+        <div class="col-9">
+            {{ http.url | truncatechars:60 }}
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4 col-md-12 col-sm-12 px-0 px-lg-3">
+      <div class="row justify-content-between">
+        <div class="col text-center nickname">
+          {%if not http.keyword %}
+          <span class="badge bg-secondary">없음</span>
+          {% else %}
+          <span class="badge bg-primary">{{ http.keyword }}</span>
+          {% endif %}
+        </div>
+        <div class="col text-center nickname">{{ http.max_response_time }}초</div>
+        <div class="col text-center nickname">
+          {% if http.is_active %}
+          <span class="badge bg-success">사용</span>
+          {% else %}
+          <span class="badge bg-secondary">미사용</span>
+          {% endif %}
+        </div>
+        <div class="col-3 text-nowrap text-lg-center order-lg-last">
+          <div class="create-date" data-toggle="created_date" data-placement="top" title="{{ http.created_at|date:'Y-m-d H:i' }}">
+            {% now "Y-m-d" as todays_date %}
+            {% if todays_date > http.created_at|date:"Y-m-d" %}
+            {{ http.created_at|date:"m-d" }}
+            {% else %}
+            {{ http.created_at|date:"H:i" }} 
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="py-1 mx-1">등록된 URL이 없습니다.</div>
+  {% endif %}
+
+  <div class="mt-3">
+    <!-- 페이징처리 시작 -->
+    <ul class="pagination pagination-sm justify-content-center">
+      <!-- 이전페이지 -->
+      {% if http_list.has_previous %}
+      <li class="page-item">
+        <a class="page-link" data-page="{{ http_list.previous_page_number }}" href="#">이전</a>
+      </li>
+      {% endif %}
+      <!-- 페이지리스트 -->
+      {% for page_number in http_list.paginator.page_range %}
+      {% if page_number >= http_list.number|add:-5 and page_number <= http_list.number|add:5 %}
+        {% if page_number == http_list.number %}
+        <li class="page-item active" aria-current="page">
+          <a class="page-link" data-page="{{ page_number }}" href="#">{{ page_number }}</a>
+        </li>
+        {% else %}
+        <li class="page-item">
+          <a class="page-link" data-page="{{ page_number }}" href="#">{{ page_number }}</a>
+        </li>
+        {% endif %}
+      {% endif %}
+      {% endfor %}
+      <!-- 다음페이지 -->
+      {% if http_list.has_next %}
+      <li class="page-item">
+        <a class="page-link" data-page="{{ http_list.next_page_number }}" href="#">다음</a>
+      </li>
+      {% endif %}
+    </ul>
+    <!-- 페이징처리 끝 -->
+  </div>
+  <div class="row">
+    <div class="col-9">
+      <div class="input-group" style="width:200px;">
+        <input type="text" class="form-control form-control-sm kw" value="{{ request.GET.kw|default_if_none:'' }}" onkeypress="if(event.key==='Enter'){$('#btn_search').click();return false;}">
+        <div class="input-group-append">
+          <button class="btn btn-outline-light text-secondary border-secondary border-opacity-25" type="button" id="btn_search">찾기</button>
+        </div>
+      </div>
+    </div>
+    <div class="col-3 d-flex justify-content-end">
+      <a href="{% url 'monitor:http_create' %}" class="btn btn-primary">등록하기</a>
+    </div>
+  </div>
+  <form id="searchForm" method="get" action="{% url 'monitor:http_list' %}">
+    <input type="hidden" id="kw" name="kw" value="{{ request.GET.kw|default_if_none:'' }}">
+    <input type="hidden" id="page" name="page" value="{{ request.GET.page }}">
+  </form>
+</div>
+{% endblock %}
+{% block script %}
+<script type='text/javascript'>
+$(document).ready(function(){
+  $(".page-link").on('click', function() {
+    $("#page").val($(this).data("page"));
+    $("#searchForm").submit();
+  });
+
+  $("#btn_search").on('click', function() {
+    $("#kw").val($(".kw").val());
+    $("#page").val(1);  // 검색버튼을 클릭할 경우 1페이지부터 조회한다.
+    $("#searchForm").submit();
+  });
+
+  // 날짜에 마우스오버하면 전체일시 나오게.
+  $(function () {
+    $('[data-toggle="create_date"]').tooltip()
+  });
+});
+</script>
+{% endblock %}
