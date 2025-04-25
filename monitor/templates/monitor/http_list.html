@@ -28,8 +28,6 @@
   {% if http_list %}
   {% for http in http_list %}
   <div class="row p-2 px-lg-0 m-0 border-bottom article-list rounded-lg align-items-center position-relative">
-    <!-- 모바일 디바이스용 링크, 화면이 커지면 반응 안함. -->
-    <a href="{% url 'monitor:http_update' http.id %}?page={{ request.GET.page }}&kw={{ request.GET.kw }}" class="d-block d-lg-none stretched-link"></a>
     <div class="col-lg-8 col-md-12 col-sm-12 px-0 px-lg-3">
       <div class="row">
         <div class="col-3 px-3">

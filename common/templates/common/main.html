@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <div class="h5">Main</div>
+</div>
+
+<div>
+  <ul class="nav nav-tabs" id="myTab">
+    <li class="nav-item">
+      <button class="nav-link active" id="status-tab" data-bs-toggle="tab" data-bs-target="#status-tab-pane" type="button" role="tab" aria-controls="status-tab-pane" aria-selected="true">비정상 URL</button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" id="monitoring-stop-tab" data-bs-toggle="tab" data-bs-target="#monitoring-stop-tab-pane" type="button" role="tab" aria-controls="monitoring-stop-tab-pane" aria-selected="false">중지된 URL</button>
+    </li>
+  </ul>
+  <div class="tab-content" id="myTabContent">
+    <!-- Status -->
+    <div class="tab-pane fade show active" id="status-tab-pane" aria-labelledby="status-tab">
+      <div class="pt-4">
+        <div class="h5">비정상 URL</div>
+      </div>
+      <div class="d-none d-lg-block">
+        <div class="row article-list-head py-2 m-0 rounded">
+          <div class="col-lg-6">
+            <div class="row">
+              <div class="col-4 px-3">Label</div>    
+              <div class="col-8 px-3">URL</div>    
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="row">
+              <div class="col text-center text-nowrap">상태</div>
+              <div class="col text-center text-nowrap">응답코드</div>
+              <div class="col text-center text-nowrap">응답시간</div>
+              <div class="col-3 text-center text-nowrap">오류메시지</div>
+              <div class="col-3 text-nowrap text-center">검사일시</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% if http_results %}
+      {% for result in http_results %}
+      <div class="row p-2 px-lg-0 m-0 border-bottom article-list rounded-lg align-items-center position-relative">
+        <div class="col-lg-6 col-md-12 col-sm-12 px-0 px-lg-3">
+          <div class="row">
+            <div class="col-4 px-3">
+              {{ result.http.label | truncatechars:60 }}
+            </div>
+            <div class="col-8 px-3">
+              <a href="{% url 'monitor:monitor_result' result.http.id %}?page={{ request.GET.page }}&kw={{ request.GET.kw }}" 
+                class="text-dark">
+                {{ result.http.url | truncatechars:60 }}
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6 col-md-12 col-sm-12 px-0 px-lg-3">
+          <div class="row justify-content-between">
+            <div class="col text-center">
+              {% if result.status == 'success' %}
+              <span class="badge bg-success">{{ result.get_status_display }}</span>
+                {% elif result.status == 'http_error' or result.status == 'keyword_not_found' or result.status == 'timeout' or result.status == 'connection_error' %}
+              <span class="badge bg-danger">{{ result.get_status_display }}</span>
+              {% else %}
+              <span class="badge bg-warning">{{ result.get_status_display }}</span>
+              {% endif %}
+            </div>
+            <div class="col text-center">
+              {% if result.response_code %}
+              {{ result.response_code }}
+              {% else %}
+              <span class="text-muted">-</span>
+              {% endif %}
+            </div>
+            <div class="col text-center">
+              {% if result.response_time %}
+                {{ result.response_time|floatformat:3 }}초
+              {% else %}
+              <span class="text-muted">-</span>
+              {% endif %}
+            </div>
+            <div class="col-3 text-center">
+              {% if result.error_message %}
+              <span class="text-danger" title="{{ result.error_message }}">{{ result.error_message | truncatechars:20 }}</span>
+              {% else %}
+              <span class="text-muted">-</span>
+              {% endif %}
+            </div>
+            <div class="col-3 text-nowrap text-lg-center order-lg-last">
+              <div class="create-date" data-toggle="checked_date" data-placement="top" title="{{ result.checked_at|date:'Y-m-d H:i:s' }}">
+                {{ result.checked_at|date:"Y-m-d H:i" }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+      {% else %}
+      <div class="py-1 mx-1">모니터링 결과가 없습니다.</div>
+      {% endif %}
+    </div>
+    <!-- /Status -->
+    <!-- Monitoring Stop -->
+    <div class="tab-pane fade show" id="monitoring-stop-tab-pane" aria-labelledby="monitoring-stop-tab">
+      <div class="pt-4">
+        <div class="h5">중지된 URL</div>
+      </div>
+      <div class="d-none d-lg-block">
+        <div class="row article-list-head py-2 m-0 rounded">
+          <div class="col-lg-8">
+            <div class="row">
+              <div class="col-3 px-3">라벨</div>    
+              <div class="col-9">URL</div>    
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="row">
+              <div class="col text-center text-nowrap">키워드</div>
+              <div class="col text-center text-nowrap">최대응답시간</div>
+              <div class="col text-center text-nowrap">사용</div>
+              <div class="col-3 text-nowrap text-center">등록일</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% if http_off_list %}
+      {% for http in http_off_list %}
+      <div class="row p-2 px-lg-0 m-0 border-bottom article-list rounded-lg align-items-center position-relative">
+        <div class="col-lg-8 col-md-12 col-sm-12 px-0 px-lg-3">
+          <div class="row">
+            <div class="col-3 px-3">
+              <a href="{% url 'monitor:http_update' http.id %}?page={{ request.GET.page }}&kw={{ request.GET.kw }}" 
+                class="text-dark">
+                {{ http.label }}
+              </a>
+            </div>
+            <div class="col-9">
+                {{ http.url | truncatechars:60 }}
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-12 col-sm-12 px-0 px-lg-3">
+          <div class="row justify-content-between">
+            <div class="col text-center nickname">
+              {%if not http.keyword %}
+              <span class="badge bg-secondary">없음</span>
+              {% else %}
+              <span class="badge bg-primary">{{ http.keyword }}</span>
+              {% endif %}
+            </div>
+            <div class="col text-center nickname">{{ http.max_response_time }}초</div>
+            <div class="col text-center nickname">
+              {% if http.is_active %}
+              <span class="badge bg-success">사용</span>
+              {% else %}
+              <span class="badge bg-secondary">미사용</span>
+              {% endif %}
+            </div>
+            <div class="col-3 text-nowrap text-lg-center order-lg-last">
+              <div class="create-date" data-toggle="created_date" data-placement="top" title="{{ http.created_at|date:'Y-m-d H:i' }}">
+                {% now "Y-m-d" as todays_date %}
+                {% if todays_date > http.created_at|date:"Y-m-d" %}
+                {{ http.created_at|date:"m-d" }}
+                {% else %}
+                {{ http.created_at|date:"H:i" }} 
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+      {% else %}
+      <div class="py-1 mx-1">모니터링이 중지된 URL이 없습니다.</div>
+      {% endif %}
+    </div>
+    <!-- /Monitoring Stop URL -->
+  </div>
+</div>
+{% endblock content %}
