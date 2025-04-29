@@ -140,6 +140,9 @@ LOGIN_URL = '/common/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/common/login/'
 
+CSRF_TRUSTED_ORIGINS = [site.strip()
+                        for site in os.getenv('CSRF_TRUSTED_ORIGINS').split(',')]
+
 # Telegram Settings
 TELEGRAM_TOKEN = '1906774510:AAHE3t1Xz7dhcwHHj_Z0nmVwxln1zKPG5fY'
 TELEGRAM_TOKEN_INCIDENT = os.getenv('TELEGRAM_TOKEN')
