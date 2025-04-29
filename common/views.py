@@ -2,11 +2,13 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.models import User
 from django.views.generic import ListView, UpdateView, DeleteView
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import SignUpForm, UserUpdateForm
 from monitor.models import Http, HttpResult
 
 
+@login_required
 def main(request):
     """
     비상정적인 페이지와 꺼저있는 페이지 보여주기.
