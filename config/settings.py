@@ -13,10 +13,12 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from celery.schedules import crontab
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -25,9 +27,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-rw)#)0yb5jid2jf&o9zml=y+u40bb#21==t!xi!$8b(qrct6ca'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = ['sds-monitor.bgfoo.com']
+ALLOWED_HOSTS = [host.strip()
+                 for host in os.getenv('ALLOWED_HOSTS').split(',')]
 
 
 # Application definition
@@ -138,8 +141,8 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/common/login/'
 
 # Telegram Settings
-# 실제 사용시 환경변수 등으로 안전하게 관리해야 합니다
 TELEGRAM_TOKEN = '1906774510:AAHE3t1Xz7dhcwHHj_Z0nmVwxln1zKPG5fY'
+TELEGRAM_TOKEN_INCIDENT = os.getenv('TELEGRAM_TOKEN')
 
 # Celery Settings
 CELERY_BROKER_URL = 'redis://localhost:6379/0'  # Redis를 브로커로 사용
