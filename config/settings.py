@@ -144,8 +144,7 @@ CSRF_TRUSTED_ORIGINS = [site.strip()
                         for site in os.getenv('CSRF_TRUSTED_ORIGINS').split(',')]
 
 # Telegram Settings
-TELEGRAM_TOKEN = '1906774510:AAHE3t1Xz7dhcwHHj_Z0nmVwxln1zKPG5fY'
-TELEGRAM_TOKEN_INCIDENT = os.getenv('TELEGRAM_TOKEN')
+TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 
 # Celery Settings
 CELERY_BROKER_URL = 'redis://localhost:6379/0'  # Redis를 브로커로 사용
