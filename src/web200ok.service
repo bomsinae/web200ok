@@ -3,8 +3,8 @@ Description=gunicorn daemon
 After=network.target
 
 [Service]
-User=ubuntu
-Group=ubuntu
+User=magellan
+Group=magellan
 WorkingDirectory=/home/magellan/Projects/web200ok
 ExecStart=/home/magellan/Projects/web200ok/.venv/bin/gunicorn \
         --workers 2 \
