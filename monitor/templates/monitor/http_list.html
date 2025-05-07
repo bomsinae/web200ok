@@ -3,7 +3,12 @@
 
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <div class="h5">
-    HTTPs
+    {% if account %}
+    <a href="{% url 'cf_account:account' %}">Account</a> > {{ account.name }} 
+    {% else %}
+    전체
+    {% endif %}
+    HTTPs ({{ http_list_count }}개)
   </div>
 </div>
 <div>
@@ -11,8 +16,11 @@
     <div class="row article-list-head py-2 m-0 rounded">
       <div class="col-lg-8">
         <div class="row">
+          {% if not account %}
+          <div class="col-2 text-nowrap">Account</div>
+          {% endif %}
           <div class="col-3 px-3">라벨</div>    
-          <div class="col-9">URL</div>    
+          <div class="col">URL</div>    
         </div>
       </div>
       <div class="col-lg-4">
@@ -21,6 +29,7 @@
           <div class="col text-center text-nowrap">최대응답시간</div>
           <div class="col text-center text-nowrap">사용</div>
           <div class="col-3 text-nowrap text-center">등록일</div>
+          <div class="col-2 text-nowrap text-center">설정</div>
         </div>
       </div>
     </div>
@@ -30,14 +39,16 @@
   <div class="row p-2 px-lg-0 m-0 border-bottom article-list rounded-lg align-items-center position-relative">
     <div class="col-lg-8 col-md-12 col-sm-12 px-0 px-lg-3">
       <div class="row">
-        <div class="col-3 px-3">
-          <a href="{% url 'monitor:http_update' http.id %}?page={{ request.GET.page }}&kw={{ request.GET.kw }}" 
-             class="text-dark">
-            {{ http.label }}
-          </a>
+        {% if not account %}
+        <div class="col-2 text-nowrap">
+          {{ http.account.name }}
         </div>
-        <div class="col-9">
-            {{ http.url | truncatechars:60 }}
+        {% endif %}
+        <div class="col-3 px-3">
+          {{ http.label }}
+        </div>
+        <div class="col">
+          {{ http.url | truncatechars:60 }}
         </div>
       </div>
     </div>
@@ -58,7 +69,7 @@
           <span class="badge bg-secondary">미사용</span>
           {% endif %}
         </div>
-        <div class="col-3 text-nowrap text-lg-center order-lg-last">
+        <div class="col-3 text-nowrap text-lg-center">
           <div class="create-date" data-toggle="created_date" data-placement="top" title="{{ http.created_at|date:'Y-m-d H:i' }}">
             {% now "Y-m-d" as todays_date %}
             {% if todays_date > http.created_at|date:"Y-m-d" %}
@@ -67,6 +78,11 @@
             {{ http.created_at|date:"H:i" }} 
             {% endif %}
           </div>
+        </div>
+        <div class="col-2 text-center">
+          <a href="{% url 'cf_account:account_http_update' http.id %}">
+            <span data-feather="settings"></span>
+          </a>
         </div>
       </div>
     </div>
@@ -117,11 +133,17 @@
         </div>
       </div>
     </div>
+    {% if account %}
     <div class="col-3 d-flex justify-content-end">
-      <a href="{% url 'monitor:http_create' %}" class="btn btn-primary">등록하기</a>
+      <a href="{% url 'cf_account:account_http_create' account.id %}" class="btn btn-primary">등록하기</a>
     </div>
+    {% endif %}
   </div>
+  {% if account %}
+  <form id="searchForm" method="get" action="{% url 'cf_account:account_http_list' account.id %}">
+  {% else %}
   <form id="searchForm" method="get" action="{% url 'monitor:http_list' %}">
+  {% endif %}
     <input type="hidden" id="kw" name="kw" value="{{ request.GET.kw|default_if_none:'' }}">
     <input type="hidden" id="page" name="page" value="{{ request.GET.page }}">
   </form>

@@ -1,3 +1,4 @@
+import html
 import asyncio
 from asgiref.sync import sync_to_async
 import requests
@@ -70,6 +71,7 @@ class HttpMonitoringService:
 
         # 결과 저장
         result = HttpResult.objects.create(
+            account=http.account,
             http=http,
             status=status,
             response_code=response_code,
@@ -92,12 +94,13 @@ class HttpMonitoringService:
 
         message = f"""⚠️ 웹사이트 모니터링 알림 ⚠️
 
-    사이트: {http.label}
+    Account: {http.account.name}
+    라벨: {http.label}
     URL: {http.url}
     상태: {result.get_status_display()}
     응답 코드: {result.response_code if result.response_code else 'N/A'}
     응답 시간: {result.response_time:.2f}초
-    오류: {result.error_message if result.error_message else 'N/A'}
+    오류: {html.escape(result.error_message) if result.error_message else 'N/A'}
     시간: {kst_time.strftime('%Y-%m-%d %H:%M:%S')}
     """
 
@@ -125,7 +128,8 @@ class HttpMonitoringService:
     @staticmethod
     def run_all_active_http():
         """모든 활성화된 모니터링 실행"""
-        http_list = Http.objects.filter(is_active=True)
+        http_list = Http.objects.filter(
+            is_active=True, account__is_monitor=True)
         results = []
 
         for http in http_list:

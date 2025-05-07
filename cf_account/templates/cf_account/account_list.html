@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <div class="h5">
+    Account
+  </div>
+</div>
+
+<div>
+  <div class="d-none d-lg-block">
+    <div class="row article-list-head py-2 m-0 rounded">
+      <div class="col-lg-6">
+        <div class="row">
+          <div class="col text-nowrap">Account</div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="row">
+          <div class="col text-nowrap text-center">모니터링 수</div>
+          <div class="col text-nowrap text-center">모니터링</div>
+          <div class="col text-nowrap text-center">등록일시</div>
+          <div class="col-2 text-nowrap text-center">설정</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% if object_list %}
+  {% for object in object_list %}
+  <div class="row py-2 px-lg-0 m-0 border-bottom article-list rounded align-items-center position-relative">
+    <div class="col-lg-6 col-md-12 col-sm-12 px-0">
+      <div class="row m-0">
+        <div class="col">
+          <a href="{% url 'cf_account:account_http_list' object.id %}">
+          {{ object.name }}
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6 col-md-12 col-sm-12 px-0">
+      <div class="row justify-content-between m-0">
+        <div class="col text-center">
+          {{ object.account_http.count|default:"0" }}
+        </div>
+        <div class="col text-center">
+          {% if object.is_monitor %}
+          <span data-feather="bell" class="text-secondary"></span>
+          {% else %}
+          <span data-feather="x" class="text-danger"></span>
+          {% endif %}
+        </div>
+        <div class="col text-center d-none d-lg-block">
+          <div class="create-date" data-toggle="create_date" data-placement="top">
+            {{ object.regdate|date:"Y-m-d H:i" }}
+          </div>
+        </div>
+        <div class="col-2 text-center">
+          <a href="{% url 'cf_account:account_update' object.id %}">
+            <span data-feather="settings"></span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="py-1 mx-1">등록된 Account가 없습니다.</div>
+  {% endif %}
+</div>
+{% if request.user.is_staff %}
+<div class="row my-3">
+  <div class="col d-flex justify-content-end">
+    <a href="{% url 'cf_account:account_create' %}" class="border btn btn-primary">Account 생성</a>
+  </div>
+</div>
+{% endif %}
+{% endblock content %}

@@ -16,6 +16,12 @@
       </li>
       <hr class="my-3 border-secondary opacity-50">
       <li class="nav-item">
+        <a class="nav-link {% menu_active 'cf_account' %}" href="{% url 'cf_account:account' %}">
+          <span data-feather="cloud" class="align-text-bottom"></span>
+          Account
+        </a>
+      </li>
+      <li class="nav-item">
         <a class="nav-link {% menu_active 'common:user' %}" href="{% url 'common:user' %}">
           <span data-feather="users" class="align-text-bottom"></span>
           User

@@ -23,4 +23,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('common/', include('common.urls', namespace='common')),
     path('monitor/', include('monitor.urls', namespace='monitor')),
+    path('cf_account/', include('cf_account.urls', namespace='cf_account')),
 ]

@@ -1,10 +1,13 @@
 from django.db import models
+from cf_account.models import Account
 
 # Create your models here.
 
 
 class Http(models.Model):
-    url = models.CharField(max_length=255)
+    account = models.ForeignKey(
+        Account, on_delete=models.CASCADE, related_name='account_http')
+    url = models.URLField(max_length=255, unique=True)
     label = models.CharField(max_length=255)
     keyword = models.CharField(max_length=255, blank=True)
     max_response_time = models.IntegerField()
@@ -31,8 +34,10 @@ class HttpResult(models.Model):
         ('other_error', '기타 오류'),
     )
 
+    account = models.ForeignKey(
+        Account, on_delete=models.CASCADE, related_name='account_http_result')
     http = models.ForeignKey(
-        Http, on_delete=models.CASCADE, related_name='results')
+        Http, on_delete=models.CASCADE, related_name='http_result')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)
     response_code = models.IntegerField(null=True, blank=True)
     response_time = models.FloatField(null=True, blank=True)

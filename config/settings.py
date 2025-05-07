@@ -36,6 +36,7 @@ ALLOWED_HOSTS = [host.strip()
 # Application definition
 
 INSTALLED_APPS = [
+    'cf_account.apps.CfAccountConfig',
     'common.apps.CommonConfig',
     'monitor.apps.MonitorConfig',
     'django.contrib.admin',

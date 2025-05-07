@@ -32,7 +32,7 @@ def check_all_websites():
     try:
         # 모든 활성화된 모니터링 대상 가져오기
         http_ids = list(Http.objects.filter(
-            is_active=True).values_list('id', flat=True))
+            is_active=True, account__is_monitor=True).values_list('id', flat=True))
 
         if not http_ids:
             logger.info("활성화된 모니터링 대상이 없습니다.")
