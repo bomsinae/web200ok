@@ -39,7 +39,7 @@
           {{ result.http.account.name }}
         </div>
         <div class="col-3 px-3">
-          {{ result.http.label }}
+          {{ result.http.label | truncatechars:20 }}
         </div>
         <div class="col px-3">
           {{ result.http.url | truncatechars:60 }}
