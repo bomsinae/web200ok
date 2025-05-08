@@ -45,7 +45,7 @@
         </div>
         {% endif %}
         <div class="col-3 px-3">
-          {{ http.label }}
+          {{ http.label | truncatechars:20 }}
         </div>
         <div class="col">
           {{ http.url | truncatechars:60 }}

@@ -47,7 +47,7 @@
               {{ result.http.account.name }}
             </div>
             <div class="col-3 px-3">
-              {{ result.http.label | truncatechars:60 }}
+              {{ result.http.label | truncatechars:20 }}
             </div>
             <div class="col px-3">
               <a href="{% url 'monitor:monitor_result' result.http.id %}?page={{ request.GET.page }}&kw={{ request.GET.kw }}" 
@@ -131,7 +131,7 @@
               {{ http.account.name }}
             </div>
             <div class="col-3 px-3">
-              {{ http.label }}
+              {{ http.label | truncatechars:20 }}
             </div>
             <div class="col">
               <a href="{% url 'cf_account:account_http_update' http.id %}?page={{ request.GET.page }}&kw={{ request.GET.kw }}" 
