@@ -7,7 +7,7 @@ class HttpForm(forms.ModelForm):
         model = Http
         fields = ['label', 'url', 'keyword', 'max_response_time', 'is_active']
         widgets = {
-            'url': forms.TextInput(attrs={'class': 'form-control'}),
+            'url': forms.URLInput(attrs={'class': 'form-control'}),
             'label': forms.TextInput(attrs={'class': 'form-control'}),
             'keyword': forms.TextInput(attrs={'class': 'form-control'}),
             'max_response_time': forms.NumberInput(attrs={'class': 'form-control'}),
@@ -40,16 +40,21 @@ class HttpForm(forms.ModelForm):
                 'invalid': '유효한 숫자를 입력하세요.',
             },
         }
-        # Add any additional validation or customization here
 
-        def clean(self):
-            cleaned_data = super().clean()
-            url = cleaned_data.get('url')
-            max_response_time = cleaned_data.get('max_response_time')
+    def clean_url(self):
+        url = self.cleaned_data.get('url', '')
+        if url and not (url.startswith('http://') or url.startswith('https://')):
+            url = 'https://' + url
+        return url
 
-            if not url:
-                self.add_error('url', 'URL을 입력하세요.')
-            if max_response_time <= 0:
-                self.add_error('max_response_time', '최대응답시간은 0보다 커야 합니다.')
+    def clean(self):
+        cleaned_data = super().clean()
+        url = cleaned_data.get('url')
+        max_response_time = cleaned_data.get('max_response_time')
 
-            return cleaned_data
+        if not url:
+            self.add_error('url', 'URL을 입력하세요.')
+        if max_response_time is not None and max_response_time <= 0:
+            self.add_error('max_response_time', '최대응답시간은 0보다 커야 합니다.')
+
+        return cleaned_data

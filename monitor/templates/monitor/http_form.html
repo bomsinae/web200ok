@@ -24,4 +24,17 @@
 </div>
 {% endblock content %}
 {% block script %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var urlInput = document.querySelector('input[name="url"]');
+  if (urlInput) {
+    urlInput.addEventListener('blur', function() {
+      var val = urlInput.value.trim();
+      if (val && !val.startsWith('http://') && !val.startsWith('https://')) {
+        urlInput.value = 'https://' + val;
+      }
+    });
+  }
+});
+</script>
 {% endblock script %}
