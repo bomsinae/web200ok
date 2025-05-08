@@ -28,7 +28,8 @@ def main(request):
     )
 
     # 그 중에서 status가 'success'가 아닌 것만 필터링
-    http_results = latest_results.exclude(status='success')
+    http_results = latest_results.exclude(
+        status='success').order_by('-checked_at')
 
     # 모니터링이 꺼져 있는 URL을 가져오기
     http_off_list = Http.objects.filter(is_active=False)
