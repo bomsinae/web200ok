@@ -27,11 +27,11 @@ class HttpMonitoringService:
         try:
             # User-Agent 및 기타 헤더 설정
             headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
-                'Connection': 'keep-alive',
-                'Upgrade-Insecure-Requests': '1',
+                'User-Agent': settings.USER_AGENT,
+                'Accept': settings.ACCEPT,
+                'Accept-Language': settings.ACCEPT_LANGUAGE,
+                'Connection': settings.CONNECTION,
+                'Upgrade-Insecure-Requests': settings.UPGRADE_INSECURE_REQUESTS,
             }
             # 요청 시작 시간 기록
             # timeout is specified in seconds

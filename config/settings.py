@@ -165,6 +165,7 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
+
 # Logging Configuration
 LOGGING = {
     'version': 1,
@@ -227,3 +228,9 @@ LOGGING = {
         },
     },
 }
+
+USER_AGENT = os.getenv('USER_AGENT')
+ACCEPT = os.getenv('ACCEPT')
+ACCEPT_LANGUAGE = os.getenv('ACCEPT_LANGUAGE')
+CONNECTION = os.getenv('CONNECTION')
+UPGRADE_INSECURE_REQUESTS = os.getenv('UPGRADE_INSECURE_REQUESTS')
