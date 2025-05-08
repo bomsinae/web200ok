@@ -21,18 +21,18 @@
       </div>
       <div class="d-none d-lg-block">
         <div class="row article-list-head py-2 m-0 rounded">
-          <div class="col-lg-6">
+          <div class="col-lg-8">
             <div class="row">
-              <div class="col-4 px-3">Label</div>    
-              <div class="col-8 px-3">URL</div>    
+              <div class="col-2 px-3">Account</div>    
+              <div class="col-3 px-3">Label</div>    
+              <div class="col px-3">URL</div>    
             </div>
           </div>
-          <div class="col-lg-6">
+          <div class="col-lg-4">
             <div class="row">
               <div class="col text-center text-nowrap">상태</div>
               <div class="col text-center text-nowrap">응답코드</div>
               <div class="col text-center text-nowrap">응답시간</div>
-              <div class="col-3 text-center text-nowrap">오류메시지</div>
               <div class="col-3 text-nowrap text-center">검사일시</div>
             </div>
           </div>
@@ -41,12 +41,15 @@
       {% if http_results %}
       {% for result in http_results %}
       <div class="row p-2 px-lg-0 m-0 border-bottom article-list rounded-lg align-items-center position-relative">
-        <div class="col-lg-6 col-md-12 col-sm-12 px-0 px-lg-3">
+        <div class="col-lg-8 col-md-12 col-sm-12 px-0 px-lg-3">
           <div class="row">
-            <div class="col-4 px-3">
+            <div class="col-2 text-nowrap">
+              {{ result.http.account.name }}
+            </div>
+            <div class="col-3 px-3">
               {{ result.http.label | truncatechars:60 }}
             </div>
-            <div class="col-8 px-3">
+            <div class="col px-3">
               <a href="{% url 'monitor:monitor_result' result.http.id %}?page={{ request.GET.page }}&kw={{ request.GET.kw }}" 
                 class="text-dark">
                 {{ result.http.url | truncatechars:60 }}
@@ -54,7 +57,7 @@
             </div>
           </div>
         </div>
-        <div class="col-lg-6 col-md-12 col-sm-12 px-0 px-lg-3">
+        <div class="col-lg-4 col-md-12 col-sm-12 px-0 px-lg-3">
           <div class="row justify-content-between">
             <div class="col text-center">
               {% if result.status == 'success' %}
@@ -79,16 +82,9 @@
               <span class="text-muted">-</span>
               {% endif %}
             </div>
-            <div class="col-3 text-center">
-              {% if result.error_message %}
-              <span class="text-danger" title="{{ result.error_message }}">{{ result.error_message | truncatechars:20 }}</span>
-              {% else %}
-              <span class="text-muted">-</span>
-              {% endif %}
-            </div>
             <div class="col-3 text-nowrap text-lg-center order-lg-last">
               <div class="create-date" data-toggle="checked_date" data-placement="top" title="{{ result.checked_at|date:'Y-m-d H:i:s' }}">
-                {{ result.checked_at|date:"Y-m-d H:i" }}
+                {{ result.checked_at|date:"m-d H:i" }}
               </div>
             </div>
           </div>
@@ -109,8 +105,11 @@
         <div class="row article-list-head py-2 m-0 rounded">
           <div class="col-lg-8">
             <div class="row">
+              <div class="col-2 text-nowrap">
+                {{ http.account.name }}
+              </div>
               <div class="col-3 px-3">라벨</div>    
-              <div class="col-9">URL</div>    
+              <div class="col">URL</div>    
             </div>
           </div>
           <div class="col-lg-4">
@@ -128,14 +127,17 @@
       <div class="row p-2 px-lg-0 m-0 border-bottom article-list rounded-lg align-items-center position-relative">
         <div class="col-lg-8 col-md-12 col-sm-12 px-0 px-lg-3">
           <div class="row">
-            <div class="col-3 px-3">
-              <a href="{% url 'monitor:http_update' http.id %}?page={{ request.GET.page }}&kw={{ request.GET.kw }}" 
-                class="text-dark">
-                {{ http.label }}
-              </a>
+            <div class="col-2 text-nowrap">
+              {{ http.account.name }}
             </div>
-            <div class="col-9">
+            <div class="col-3 px-3">
+              {{ http.label }}
+            </div>
+            <div class="col">
+              <a href="{% url 'cf_account:account_http_update' http.id %}?page={{ request.GET.page }}&kw={{ request.GET.kw }}" 
+                class="text-dark">
                 {{ http.url | truncatechars:60 }}
+              </a>
             </div>
           </div>
         </div>
