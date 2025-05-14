@@ -8,3 +8,4 @@ db.sqlite3
 *_test.py
 last_positions.txt
 celerybeat-schedule
+tmp/
