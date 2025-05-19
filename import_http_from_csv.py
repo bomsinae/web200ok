@@ -15,11 +15,11 @@ def main():
     with open(csv_path, newline='', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            account_name = row['Account'].strip()
-            url = row['Zone'].strip()
-            use_flag = row['CNAME'].strip().upper()
+            account_name = row['Account.name'].strip()
+            zone_name = row['Zone.name'].strip()
+            use_flag = row['Zone.cname'].strip().upper()
 
-            if not url or not account_name:
+            if not zone_name or not account_name:
                 continue
             if use_flag == 'YES':
                 is_active = True
@@ -28,7 +28,7 @@ def main():
             else:
                 continue
 
-            if not url or url.endswith('sds-secaas.com'):
+            if not zone_name or zone_name.endswith('sds-secaas.com'):
                 continue
 
             try:
@@ -37,7 +37,7 @@ def main():
                 print(f"Account not found: {account_name}")
                 continue
 
-            url = (f"https://{url}") if not url.startswith(('http://', 'https://')) else url
+            url = f"https://{zone_name}"
 
             # 중복 URL 방지
             if Http.objects.filter(url=url).exists():
@@ -47,8 +47,8 @@ def main():
             http = Http(
                 account=account,
                 url=url,
-                label=url,
-                max_response_time=3,
+                label=zone_name,
+                max_response_time=5,
                 is_active=is_active
             )
             http.save()
