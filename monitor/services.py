@@ -45,7 +45,7 @@ class HttpMonitoringService:
             response_time = time.time() - start_time
 
             # 응답 코드 확인
-            if not 200 <= response_code < 300:
+            if not 200 <= response_code < 400:
                 status = 'http_error'
                 error_message = f"HTTP Error: {response_code}"
 
