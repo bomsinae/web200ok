@@ -32,7 +32,8 @@ def http_list(request, account_id=None):
             Q(keyword__icontains=kw)
         ).distinct()
 
-    http_list_account = http_list.count()
+    http_list_count = http_list.count()
+    active_http_list = http_list.filter(is_active=True).count()
     # 페이징처리
     per_page = 16
     paginator = Paginator(http_list, per_page)
@@ -44,7 +45,8 @@ def http_list(request, account_id=None):
         'kw': kw,
         'account_id': account_id,
         'account': account if account_id else None,
-        'http_list_count': http_list_account,
+        'http_list_count': http_list_count,
+        'active_http_list': active_http_list,
     }
 
     return render(request, 'monitor/http_list.html', context)

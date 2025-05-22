@@ -48,7 +48,7 @@ def main():
                 account=account,
                 url=url,
                 label=zone_name,
-                max_response_time=5,
+                max_response_time=10,
                 is_active=is_active
             )
             http.save()
