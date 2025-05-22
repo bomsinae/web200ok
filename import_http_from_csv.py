@@ -46,7 +46,7 @@ def main():
             url = f"https://{zone_name}"
 
             # 중복 URL 방지
-            if Http.objects.filter(url=url).exists():
+            if Http.objects.filter(label=zone_name).exists():
                 print(f"Already exists: {url}")
                 continue
 
