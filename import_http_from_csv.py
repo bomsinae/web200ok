@@ -24,7 +24,13 @@ def main():
             if use_flag == 'YES':
                 is_active = True
             elif use_flag == 'NO':
-                is_active = False
+                # 이미 등록된 Http가 있으면 삭제
+                url = f"https://{zone_name}"
+                qs = Http.objects.filter(url=url)
+                if qs.exists():
+                    print(f"Deleting (NO): {url}")
+                    qs.delete()
+                continue
             else:
                 continue
 

@@ -6,6 +6,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import SignUpForm, UserUpdateForm
 from monitor.models import Http, HttpResult
+import openpyxl
+from django.http import HttpResponse
 
 
 @login_required
@@ -77,3 +79,45 @@ class UserDeleteView(LoginRequiredMixin, DeleteView):
     model = User
     template_name = 'common/user_confirm_delete.html'
     success_url = reverse_lazy('common:user')
+
+
+@login_required
+def abnormal_url_excel_download(request):
+    """
+    비정상 URL 리스트를 엑셀로 다운로드
+    """
+    from django.db.models import Subquery, OuterRef
+    # 각 HTTP URL별 가장 최근 체크 시간 구하기
+    latest_checks = HttpResult.objects.filter(
+        http=OuterRef('http')
+    ).order_by('-checked_at').values('id')[:1]
+    # 위에서 구한 최근 체크 결과만 가져오기
+    latest_results = HttpResult.objects.filter(
+        id__in=Subquery(latest_checks)
+    )
+    # 그 중에서 status가 'success'가 아닌 것만 필터링
+    http_results = latest_results.exclude(
+        status='success').order_by('-checked_at')
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = '비정상 URL'
+    ws.append(['Account', 'Label', 'URL', '상태',
+              '응답코드', '응답시간', '오류메시지', '검사일시'])
+    for result in http_results:
+        ws.append([
+            result.http.account.name if hasattr(
+                result.http, 'account') else '',
+            result.http.label,
+            result.http.url,
+            result.get_status_display(),
+            result.response_code,
+            result.response_time,
+            result.error_message,
+            result.checked_at.strftime('%Y-%m-%d %H:%M:%S'),
+        ])
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="abnormal_url_list.xlsx"'
+    wb.save(response)
+    return response

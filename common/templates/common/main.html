@@ -16,8 +16,9 @@
   <div class="tab-content" id="myTabContent">
     <!-- Status -->
     <div class="tab-pane fade show active" id="status-tab-pane" aria-labelledby="status-tab">
-      <div class="pt-4">
+      <div class="pt-4 d-flex justify-content-between align-items-center">
         <div class="h5">비정상 URL</div>
+        <a href="{% url 'common:abnormal_url_excel_download' %}" class="btn btn-outline-success btn-sm">엑셀 다운로드</a>
       </div>
       <div class="d-none d-lg-block">
         <div class="row article-list-head py-2 m-0 rounded">

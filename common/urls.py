@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import signup, signup_success
+from .views import signup, signup_success, abnormal_url_excel_download
 from .views import UserListView, UserUpdateView, UserDeleteView
 from django.contrib.auth import views as auth_views
 
@@ -14,4 +14,6 @@ urlpatterns = [
     path('user/', UserListView.as_view(), name='user'),
     path('user_update/<int:pk>', UserUpdateView.as_view(), name='user_update'),
     path('user_delete/<int:pk>', UserDeleteView.as_view(), name='user_delete'),
+    path('abnormal_url_excel_download/', abnormal_url_excel_download,
+         name='abnormal_url_excel_download'),
 ]
