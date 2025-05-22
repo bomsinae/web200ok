@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <div class="h5">
+    <a href="{% url 'cf_account:account' %}">Account</a>
+    > 삭제 확인
+  </div>
+</div>
+<div class="row my-3">
+  <div class="col-md-5">
+    <div class="alert alert-danger">
+      <strong>정말로 이 Account를 삭제하시겠습니까?</strong>
+    </div>
+    <table class="table">
+      <tr>
+        <th style="width: 30%">이름</th>
+        <td>{{ object.name }}</td>
+      </tr>
+      <tr>
+        <th>등록일</th>
+        <td>{{ object.regdate|date:"Y-m-d H:i" }}</td>
+      </tr>
+    </table>
+    <form method="post">
+      {% csrf_token %}
+      <div class="mt-3">
+        <a href="{% url 'cf_account:account_update' object.pk %}" class="btn btn-secondary">취소</a>
+        <button type="submit" class="btn btn-danger">삭제</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock content %}
