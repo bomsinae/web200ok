@@ -19,52 +19,67 @@ class HttpMonitoringService:
     @staticmethod
     def check_http(http):
         """단일 웹사이트 모니터링 체크 수행"""
-        start_time = time.time()
-        status = 'success'
-        response_code = None
-        error_message = ''
 
-        try:
-            # User-Agent 및 기타 헤더 설정
-            headers = {
-                'User-Agent': settings.USER_AGENT,
-                'Accept': settings.ACCEPT,
-                'Accept-Language': settings.ACCEPT_LANGUAGE,
-                'Connection': settings.CONNECTION,
-                'Upgrade-Insecure-Requests': settings.UPGRADE_INSECURE_REQUESTS,
-            }
-            # timeout is specified in seconds
-            with httpx.Client(timeout=http.max_response_time, headers=headers) as client:
-                response = client.get(http.url)
-            response_code = response.status_code
+        def _try_check():
+            start_time = time.time()
+            status = 'success'
+            response_code = None
+            error_message = ''
 
-            # 응답 시간 계산
-            response_time = time.time() - start_time
+            try:
+                # User-Agent 및 기타 헤더 설정
+                headers = {
+                    'User-Agent': settings.USER_AGENT,
+                    'Accept': settings.ACCEPT,
+                    'Accept-Language': settings.ACCEPT_LANGUAGE,
+                    'Connection': settings.CONNECTION,
+                    'Upgrade-Insecure-Requests': settings.UPGRADE_INSECURE_REQUESTS,
+                }
+                # timeout is specified in seconds
+                with httpx.Client(timeout=http.max_response_time, headers=headers) as client:
+                    response = client.get(http.url)
+                response_code = response.status_code
 
-            # 응답 코드 확인
-            if not 200 <= response_code < 500:
-                status = 'http_error'
-                error_message = f"HTTP Error: {response.text if response.text else response_code}"
+                # 응답 시간 계산
+                response_time = time.time() - start_time
 
-            # 키워드 확인 (설정된 경우)
-            elif http.keyword and http.keyword not in response.text:
-                status = 'keyword_not_found'
-                error_message = f"키워드 '{http.keyword}'를 찾을 수 없습니다"
+                # 응답 코드 확인
+                if not 200 <= response_code < 500:
+                    status = 'http_error'
+                    error_message = f"HTTP Error: {response.text if response.text else response_code}"
 
-        except httpx.TimeoutException:
-            response_time = http.max_response_time
-            status = 'timeout'
-            error_message = f"응답 시간 초과 ({http.max_response_time}초)"
+                # 키워드 확인 (설정된 경우)
+                elif http.keyword and http.keyword not in response.text:
+                    status = 'keyword_not_found'
+                    error_message = f"키워드 '{http.keyword}'를 찾을 수 없습니다"
 
-        except httpx.RequestError as e:
-            response_time = time.time() - start_time
-            status = 'connection_error'
-            error_message = f"연결 오류 발생: {str(e)}"
+            except httpx.TimeoutException:
+                response_time = http.max_response_time
+                status = 'timeout'
+                error_message = f"응답 시간 초과 ({http.max_response_time}초)"
 
-        except Exception as e:
-            response_time = time.time() - start_time
-            status = 'other_error'
-            error_message = f"오류 발생: {str(e)}"
+            except httpx.RequestError as e:
+                response_time = time.time() - start_time
+                status = 'connection_error'
+                error_message = f"연결 오류 발생: {str(e)}"
+
+            except Exception as e:
+                response_time = time.time() - start_time
+                status = 'other_error'
+                error_message = f"오류 발생: {str(e)}"
+
+            return status, response_code, response_time, error_message
+
+        # 1차 시도
+        status, response_code, response_time, error_message = _try_check()
+
+        # 실패 시 최대 2회까지(총 3회) 5초 대기 후 재시도
+        retry_count = 0
+        max_retries = 2
+        while status != 'success' and retry_count < max_retries:
+            time.sleep(5)
+            status, response_code, response_time, error_message = _try_check()
+            retry_count += 1
 
         # 결과 저장
         result = HttpResult.objects.create(
