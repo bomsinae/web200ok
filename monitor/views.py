@@ -6,6 +6,10 @@ from django.shortcuts import get_object_or_404, redirect
 from .models import Http, HttpResult
 from cf_account.models import Account
 from .forms import HttpForm
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+import json
+import httpx
 
 
 @login_required
@@ -164,3 +168,55 @@ def monitor_result(request, http_id=None):
     }
 
     return render(request, 'monitor/monitor_result.html', context)
+
+
+@csrf_exempt
+def register_monitoring_url(request):
+    """
+    외부에서 account_name, zone_name, cname_flag를 받아 모니터링에 등록/삭제하는 API
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST method required'}, status=405)
+    try:
+        data = json.loads(request.body)
+        account_name = data.get('account_name')
+        zone_name = data.get('zone_name')
+        cname_flag = data.get('cname_flag', '').upper()
+    except Exception:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    if not account_name or not zone_name or not cname_flag:
+        return JsonResponse({'error': 'account_name, zone_name, cname_flag required'}, status=400)
+    try:
+        account = Account.objects.get(name=account_name)
+    except Account.DoesNotExist:
+        return JsonResponse({'error': 'Account not found'}, status=404)
+    url = f"https://{zone_name}"
+    if cname_flag == 'YES':
+        if Http.objects.filter(url=url).exists():
+            return JsonResponse({'error': 'URL already exists'}, status=400)
+        # url 정상접속 체크 (5xx 에러면 등록하지 않음)
+        try:
+            with httpx.Client(timeout=10) as client:
+                resp = client.get(url)
+            if 500 <= resp.status_code < 600:
+                return JsonResponse({'error': f'Origin server returned {resp.status_code}, not registered'}, status=502)
+        except Exception as e:
+            return JsonResponse({'error': f'URL check failed: {str(e)}'}, status=502)
+        http = Http(
+            account=account,
+            url=url,
+            label=zone_name,
+            max_response_time=10,
+            is_active=True
+        )
+        http.save()
+        return JsonResponse({'message': 'URL registered successfully'}, status=201)
+    elif cname_flag == 'NO':
+        qs = Http.objects.filter(url=url)
+        if qs.exists():
+            qs.delete()
+            return JsonResponse({'message': 'URL deleted successfully'}, status=200)
+        else:
+            return JsonResponse({'message': 'URL not found, nothing to delete'}, status=200)
+    else:
+        return JsonResponse({'error': 'cname_flag must be YES or NO'}, status=400)
