@@ -198,8 +198,9 @@ def register_monitoring_url(request):
         try:
             with httpx.Client(timeout=10) as client:
                 resp = client.get(url)
-            if 500 <= resp.status_code < 600:
-                return JsonResponse({'error': f'Origin server returned {resp.status_code}, not registered'}, status=502)
+                body_text = resp.text
+            if 500 <= resp.status_code and 'cloudflare' in body_text.lower():
+                return JsonResponse({'error': f'Cloudflare 5xx error detected (status {resp.status_code}), not registered'}, status=502)
         except Exception as e:
             return JsonResponse({'error': f'URL check failed: {str(e)}'}, status=502)
         http = Http(
