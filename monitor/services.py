@@ -47,7 +47,7 @@ class HttpMonitoringService:
             # 응답 코드 확인
             if not 200 <= response_code < 400:
                 status = 'http_error'
-                error_message = f"HTTP Error: {response_code}"
+                error_message = f"HTTP Error: {response.code}"
 
             # 키워드 확인 (설정된 경우)
             elif http.keyword and http.keyword not in response.text:
