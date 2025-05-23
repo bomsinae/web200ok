@@ -67,10 +67,10 @@
             <div class="col text-center">
               {% if result.status == 'success' %}
               <span class="badge bg-success">{{ result.get_status_display }}</span>
-                {% elif result.status == 'http_error' or result.status == 'keyword_not_found' or result.status == 'timeout' or result.status == 'connection_error' %}
-              <span class="badge bg-danger">{{ result.get_status_display }}</span>
+              {% elif result.status == 'http_error' or result.status == 'keyword_not_found' or result.status == 'timeout' or result.status == 'connection_error' %}
+              <button class="badge bg-danger copy-on-click border-0" onclick="copyToClipboard('{{ result.error_message|escapejs }}')" title="{{ result.error_message }}">{{ result.get_status_display }}</button>
               {% else %}
-              <span class="badge bg-warning">{{ result.get_status_display }}</span>
+              <button class="badge bg-warning copy-on-click border-0" onclick="copyToClipboard('{{ result.error_message|escapejs }}')" title="{{ result.error_message }}">{{ result.get_status_display }}</button>
               {% endif %}
             </div>
             <div class="col text-center">
@@ -185,3 +185,30 @@
   </div>
 </div>
 {% endblock content %}
+{% block script %}
+<script type='text/javascript'>
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text)
+    .then(() => {
+      // Create a temporary tooltip element
+      const tooltip = document.createElement('div');
+      tooltip.textContent = '에러 메시지가 클립보드에 복사되었습니다.';
+      tooltip.style.cssText = 
+        'position: fixed; background: rgba(0,0,0,0.8); color: white; padding: 8px 12px; ' +
+        'border-radius: 4px; z-index: 9999; top: 50%; left: 50%; transform: translate(-50%, -50%); ' +
+        'font-size: 14px; opacity: 1; transition: opacity 0.5s;';
+      document.body.appendChild(tooltip);
+      
+      // Make tooltip disappear after 2 seconds
+      setTimeout(() => {
+        tooltip.style.opacity = 0;
+        setTimeout(() => document.body.removeChild(tooltip), 500);
+      }, 2000);
+    })
+    .catch(err => {
+      console.error('클립보드 복사 실패:', err);
+    });
+}
+
+</script>
+{% endblock %}
