@@ -89,20 +89,22 @@ class HttpMonitoringService:
     def send_alert(http, result):
         """알림 전송"""
 
-        # UTC to KST conversion (UTC+9)
-        kst_time = result.checked_at + timedelta(hours=9)
+        # error_message가 너무 길면 자르기 (예: 1000자 제한)
+        MAX_ERROR_MSG_LEN = 1000
+        error_msg = result.error_message or 'N/A'
+        if len(error_msg) > MAX_ERROR_MSG_LEN:
+            error_msg = error_msg[:MAX_ERROR_MSG_LEN] + '... (생략됨)'
 
         message = f"""⚠️ 웹사이트 모니터링 알림 ⚠️
 
-    Account: {http.account.name}
-    라벨: {http.label}
-    URL: {http.url}
-    상태: {result.get_status_display()}
-    응답 코드: {result.response_code if result.response_code else 'N/A'}
-    응답 시간: {result.response_time:.2f}초
-    오류: {html.escape(result.error_message) if result.error_message else 'N/A'}
-    시간: {kst_time.strftime('%Y-%m-%d %H:%M:%S')}
-    """
+        Account: {http.account.name}
+        라벨: {http.label}
+        URL: {http.url}
+        상태: {result.get_status_display()}
+        응답 코드: {result.response_code if result.response_code else 'N/A'}
+        응답 시간: {result.response_time:.2f}초
+        오류: {html.escape(error_msg)}
+        """
 
         asyncio.run(HttpMonitoringService.send_telegram(message))
 
