@@ -1,7 +1,7 @@
 import html
 import asyncio
 from asgiref.sync import sync_to_async
-import requests
+import httpx
 import logging
 import time
 from django.contrib.auth.models import User
@@ -33,12 +33,9 @@ class HttpMonitoringService:
                 'Connection': settings.CONNECTION,
                 'Upgrade-Insecure-Requests': settings.UPGRADE_INSECURE_REQUESTS,
             }
-            # 요청 시작 시간 기록
             # timeout is specified in seconds
-            response = requests.get(
-                http.url,
-                headers=headers,
-                timeout=(http.max_response_time, http.max_response_time))
+            with httpx.Client(timeout=http.max_response_time, headers=headers) as client:
+                response = client.get(http.url)
             response_code = response.status_code
 
             # 응답 시간 계산
@@ -48,7 +45,7 @@ class HttpMonitoringService:
             if not 200 <= response_code < 400:
                 status = 'http_error'
                 if response.text:
-                    error_message = f"HTTP Error: {response.code}"
+                    error_message = f"HTTP Error: {response.text}"
                 else:
                     error_message = f"HTTP Error: {response_code}"
 
@@ -57,12 +54,12 @@ class HttpMonitoringService:
                 status = 'keyword_not_found'
                 error_message = f"키워드 '{http.keyword}'를 찾을 수 없습니다"
 
-        except requests.exceptions.Timeout:
+        except httpx.TimeoutException:
             response_time = http.max_response_time
             status = 'timeout'
             error_message = f"응답 시간 초과 ({http.max_response_time}초)"
 
-        except requests.exceptions.ConnectionError as e:
+        except httpx.RequestError as e:
             response_time = time.time() - start_time
             status = 'connection_error'
             error_message = f"연결 오류 발생: {str(e)}"
