@@ -39,12 +39,13 @@ class HttpMonitoringService:
                 with httpx.Client(timeout=http.max_response_time, headers=headers) as client:
                     response = client.get(http.url)
                 response_code = response.status_code
+                body_text = response.text
 
                 # 응답 시간 계산
                 response_time = time.time() - start_time
 
                 # 응답 코드 확인
-                if not 200 <= response_code < 500:
+                if response_code >= 500 and 'cloudflare' in body_text.lower():
                     status = 'http_error'
                     error_message = f"HTTP Error: {response.text if response.text else response_code}"
 
