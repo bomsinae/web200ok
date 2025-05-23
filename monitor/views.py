@@ -210,7 +210,7 @@ def register_monitoring_url(request):
             is_active=True
         )
         http.save()
-        return JsonResponse({'message': 'URL registered successfully'}, status=201)
+        return JsonResponse({'message': 'URL registered successfully'}, status=200)
     elif cname_flag == 'NO':
         qs = Http.objects.filter(url=url)
         if qs.exists():
