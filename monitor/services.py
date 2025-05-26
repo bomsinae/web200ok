@@ -4,6 +4,7 @@ from asgiref.sync import sync_to_async
 import httpx
 import logging
 import time
+import re
 from django.contrib.auth.models import User
 from django.conf import settings
 from .models import Http, HttpResult
@@ -38,7 +39,12 @@ class HttpMonitoringService:
             response_time = time.time() - start_time
             if response_code >= 500 and 'cloudflare' in body_text.lower():
                 status = 'http_error'
-                error_message = f"HTTP Error: {response.text if response.text else response_code}"
+                # HTML 태그 제거 후 빈 줄도 제거
+                text_only = re.sub('<[^<]+?>', '', response.text)
+                # 빈 줄 제거
+                text_only = '\n'.join(
+                    [line for line in text_only.splitlines() if line.strip()])
+                error_message = f"HTTP Error: {text_only.strip() if text_only else response_code}"
             elif http.keyword and http.keyword not in response.text:
                 status = 'keyword_not_found'
                 error_message = f"키워드 '{http.keyword}'를 찾을 수 없습니다"
