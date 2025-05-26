@@ -207,7 +207,7 @@ def register_monitoring_url(request):
             account=account,
             url=url,
             label=zone_name,
-            max_response_time=15,
+            max_response_time=30,
             is_active=True
         )
         http.save()
