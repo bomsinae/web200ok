@@ -158,9 +158,8 @@ CELERY_TIMEZONE = TIME_ZONE
 # Celery Beat Schedule - crontab 형식 사용
 
 CELERY_BEAT_SCHEDULE = {
-    'check-all-websites-every-5-minutes': {
-        'task': 'monitor.tasks.check_all_websites',
-        # 매 시간 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55분에 실행
+    'run-monitoring-all-every-5-minutes': {
+        'task': 'monitor.tasks.run_monitoring_all',
         'schedule': crontab(minute='*/5'),
     },
 }
