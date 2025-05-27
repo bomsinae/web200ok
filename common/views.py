@@ -1,3 +1,4 @@
+import asyncio
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.models import User
@@ -8,6 +9,7 @@ from .forms import SignUpForm, UserUpdateForm
 from monitor.models import Http, HttpResult
 import openpyxl
 from django.http import HttpResponse
+from telegram import Bot
 
 
 @login_required
@@ -48,6 +50,21 @@ def signup_success(request):
     return render(request, 'registration/signup_success.html')
 
 
+async def send_telegram(message):
+    TELEGRAM_TOKEN = "7513739190:AAFjoeDKBUxO_-5pl1Vcn7dY4_3hawDqdd4"
+    CHAT_ID = 412105130
+    bot = Bot(TELEGRAM_TOKEN)
+    try:
+        await bot.send_message(
+            chat_id=CHAT_ID,
+            text=message,
+            parse_mode="HTML"
+        )
+        print(f"텔레그램 메시지 전송 성공: {message}")
+    except Exception as e:
+        print(f"텔레그램 전송 오류: {e}")
+
+
 def signup(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST)
@@ -56,6 +73,9 @@ def signup(request):
             user.set_password(form.cleaned_data['password'])  # 비밀번호 설정
             user.is_active = False  # 관리자 승인이 필요하도록 비활성화
             user.save()
+            # 가입 후 관리자에게 텔레그램(412105130)으로 알림을 보내는 로직 추가
+            asyncio.run(send_telegram(
+                f"[URL모니터 회원가입 요청]\nID: {user.username}"))
             return redirect('common:signup_success')  # 성공 페이지로 리디렉션
     else:
         form = SignUpForm()
