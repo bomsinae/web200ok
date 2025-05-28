@@ -39,7 +39,10 @@
           {{ result.http.account.name }}
         </div>
         <div class="col-3 px-3">
+          <a href="{% url 'monitor:monitor_result' result.http.id %}?page={{ request.GET.page }}&kw={{ request.GET.kw }}" 
+            class="text-dark">
           {{ result.http.label | truncatechars:20 }}
+          </a>
         </div>
         <div class="col px-3">
           {{ result.http.url | truncatechars:60 }}
