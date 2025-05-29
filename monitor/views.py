@@ -134,11 +134,15 @@ def monitor_result(request, http_id=None):
     """
     if http_id is None:
         http = None
-        # http_id가 없을 경우, 모든 결과를 보여줌
         results = HttpResult.objects.all().order_by('-checked_at')
     else:
         http = get_object_or_404(Http, pk=http_id)
         results = HttpResult.objects.filter(http=http).order_by('-checked_at')
+
+    # abnormal_only 파라미터 처리
+    abnormal_only = request.GET.get('abnormal_only')
+    if abnormal_only:
+        results = results.exclude(status='success')
 
     # 입력 파라미터
     page = request.GET.get('page', '1')
@@ -165,6 +169,7 @@ def monitor_result(request, http_id=None):
         'results': page_obj,
         'page': page,
         'kw': kw,
+        'abnormal_only': abnormal_only,
     }
 
     return render(request, 'monitor/monitor_result.html', context)

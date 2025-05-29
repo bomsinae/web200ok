@@ -11,7 +11,7 @@
   </div>
   <div>
     <button class="btn btn-sm btn-outline-danger" id="btn_abnormal_toggle">
-      {% if request.GET.abnormal_only %}전체 보기{% else %}오류/비정상만 보기{% endif %}
+      {% if abnormal_only %}전체 보기{% else %}오류/비정상만 보기{% endif %}
     </button>
   </div>
 </div>
@@ -37,7 +37,6 @@
   </div>
   {% if results %}
   {% for result in results %}
-    {% if not request.GET.abnormal_only or result.status != 'success' %}
   <div class="row p-2 px-lg-0 m-0 border-bottom article-list rounded-lg align-items-center position-relative">
     <div class="col-lg-8 col-md-12 col-sm-12 px-0 px-lg-3">
       <div class="row">
@@ -88,7 +87,6 @@
       </div>
     </div>
   </div>
-    {% endif %}
   {% endfor %}
   {% else %}
   <div class="py-1 mx-1">모니터링 결과가 없습니다.</div>
@@ -100,7 +98,7 @@
       <!-- 이전페이지 -->
       {% if results.has_previous %}
       <li class="page-item">
-        <a class="page-link" data-page="{{ results.previous_page_number }}" href="#">이전</a>
+        <a class="page-link" data-page="{{ results.previous_page_number }}" href="#" data-abnormal="{{ abnormal_only|default_if_none:'' }}">이전</a>
       </li>
       {% endif %}
       <!-- 페이지리스트 -->
@@ -108,11 +106,11 @@
       {% if page_number >= results.number|add:-5 and page_number <= results.number|add:5 %}
         {% if page_number == results.number %}
         <li class="page-item active" aria-current="page">
-          <a class="page-link" data-page="{{ page_number }}" href="#">{{ page_number }}</a>
+          <a class="page-link" data-page="{{ page_number }}" href="#" data-abnormal="{{ abnormal_only|default_if_none:'' }}">{{ page_number }}</a>
         </li>
         {% else %}
         <li class="page-item">
-          <a class="page-link" data-page="{{ page_number }}" href="#">{{ page_number }}</a>
+          <a class="page-link" data-page="{{ page_number }}" href="#" data-abnormal="{{ abnormal_only|default_if_none:'' }}">{{ page_number }}</a>
         </li>
         {% endif %}
       {% endif %}
@@ -120,7 +118,7 @@
       <!-- 다음페이지 -->
       {% if results.has_next %}
       <li class="page-item">
-        <a class="page-link" data-page="{{ results.next_page_number }}" href="#">다음</a>
+        <a class="page-link" data-page="{{ results.next_page_number }}" href="#" data-abnormal="{{ abnormal_only|default_if_none:'' }}">다음</a>
       </li>
       {% endif %}
     </ul>
@@ -129,7 +127,7 @@
   <div class="row">
     <div class="col-9">
       <div class="input-group" style="width:200px;">
-        <input type="text" class="form-control form-control-sm kw" value="{{ request.GET.kw|default_if_none:'' }}" onkeypress="if(event.key==='Enter'){$('#btn_search').click();return false;}">
+        <input type="text" class="form-control form-control-sm kw" value="{{ kw|default_if_none:'' }}" onkeypress="if(event.key==='Enter'){$('#btn_search').click();return false;}">
         <div class="input-group-append">
           <button class="btn btn-outline-light text-secondary border-secondary border-opacity-25" type="button" id="btn_search">찾기</button>
         </div>
@@ -137,8 +135,9 @@
     </div>
   </div>
   <form id="searchForm" method="get" action="{% if http %}{% url 'monitor:monitor_result' http.id %}{% else %}{% url 'monitor:monitor_result' %}{% endif %}">
-    <input type="hidden" id="kw" name="kw" value="{{ request.GET.kw|default_if_none:'' }}">
-    <input type="hidden" id="page" name="page" value="{{ request.GET.page }}">
+    <input type="hidden" id="kw" name="kw" value="{{ kw|default_if_none:'' }}">
+    <input type="hidden" id="page" name="page" value="{{ page }}">
+    {% if abnormal_only %}<input type="hidden" id="abnormal_only" name="abnormal_only" value="1">{% endif %}
   </form>
 </div>
 {% endblock %}
@@ -170,12 +169,22 @@ function copyToClipboard(text) {
 $(document).ready(function(){
   $(".page-link").on('click', function() {
     $("#page").val($(this).data("page"));
+    // abnormal_only 파라미터 유지
+    if ($(this).data("abnormal")) {
+      if($(this).data("abnormal") !== "") {
+        if($("#abnormal_only").length === 0) {
+          $("#searchForm").append('<input type="hidden" id="abnormal_only" name="abnormal_only" value="1">');
+        }
+      } else {
+        $("#abnormal_only").remove();
+      }
+    }
     $("#searchForm").submit();
   });
 
   $("#btn_search").on('click', function() {
     $("#kw").val($(".kw").val());
-    $("#page").val(1);  // 검색버튼을 클릭할 경우 1페이지부터 조회한다.
+    $("#page").val(1);
     $("#searchForm").submit();
   });
 
