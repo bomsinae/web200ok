@@ -280,10 +280,12 @@ def monitor_result_excel(request, http_id=None):
     """
     if http_id is None:
         http = None
-        results = HttpResult.objects.all().order_by('-checked_at')
+        results = HttpResult.objects.all().select_related(
+            'http', 'http__account').order_by('-checked_at')
     else:
         http = get_object_or_404(Http, pk=http_id)
-        results = HttpResult.objects.filter(http=http).order_by('-checked_at')
+        results = HttpResult.objects.filter(http=http).select_related(
+            'http', 'http__account').order_by('-checked_at')
 
     abnormal_only = request.GET.get('abnormal_only')
     if abnormal_only:
@@ -301,7 +303,7 @@ def monitor_result_excel(request, http_id=None):
             Q(error_message__icontains=kw)
         ).distinct()
 
-    # 최대 100만개까지만 엑셀로 저장
+    # 최대 100만개까지만 엑셀로 저장 (DB 쿼리에서 LIMIT 적용)
     results = results[:1000000]
 
     wb = openpyxl.Workbook()
