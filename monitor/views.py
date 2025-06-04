@@ -275,9 +275,9 @@ def http_list_excel(request, account_id=None):
 
 
 @login_required
-def monitor_result_csv(request, http_id=None):
+def monitor_result_excel(request, http_id=None):
     """
-    모니터링 결과를 CSV로 다운로드
+    비정상(오류/비정상) 모니터링 결과만 엑셀로 다운로드 (최대 1만 건)
     """
     if http_id is None:
         http = None
@@ -286,9 +286,8 @@ def monitor_result_csv(request, http_id=None):
         http = get_object_or_404(Http, pk=http_id)
         results = HttpResult.objects.filter(http=http).order_by('-checked_at')
 
-    abnormal_only = request.GET.get('abnormal_only')
-    if abnormal_only:
-        results = results.exclude(status='success')
+    # 항상 비정상(오류/비정상)만 추출
+    results = results.exclude(status='success')
 
     kw = request.GET.get('kw', '')
     if kw:
@@ -302,20 +301,18 @@ def monitor_result_csv(request, http_id=None):
             Q(error_message__icontains=kw)
         ).distinct()
 
-    # 최대 100만개까지만 CSV로 저장
-    results = results[:1000000]
+    # 최대 1만개까지만 엑셀로 저장
+    results = results[:10000]
 
-    response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
-    filename = 'monitor_result.csv'
-    response['Content-Disposition'] = f'attachment; filename={filename}'
-
-    writer = csv.writer(response)
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = '모니터링결과'
     headers = ['Account', 'Label', 'URL',
                '상태', '응답코드', '응답시간', '오류메시지', '검사일시']
-    writer.writerow(headers)
+    ws.append(headers)
     for r in results:
         try:
-            writer.writerow([
+            ws.append([
                 r.http.account.name,
                 r.http.label,
                 r.http.url,
@@ -326,6 +323,11 @@ def monitor_result_csv(request, http_id=None):
                 r.checked_at.strftime('%Y-%m-%d %H:%M:%S'),
             ])
         except Exception as e:
-            print(f"Error writing row: {e}")
+            print(f"Error appending row: {e}")
             continue
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    filename = 'monitor_result.xlsx'
+    response['Content-Disposition'] = f'attachment; filename={filename}'
+    wb.save(response)
     return response
