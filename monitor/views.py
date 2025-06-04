@@ -311,16 +311,20 @@ def monitor_result_excel(request, http_id=None):
                '상태', '응답코드', '응답시간', '오류메시지', '검사일시']
     ws.append(headers)
     for r in results:
-        ws.append([
-            r.http.account.name,
-            r.http.label,
-            r.http.url,
-            r.get_status_display(),
-            r.response_code if r.response_code is not None else '',
-            f"{r.response_time:.3f}" if r.response_time is not None else '',
-            r.error_message or '',
-            r.checked_at.strftime('%Y-%m-%d %H:%M:%S'),
-        ])
+        try:
+            ws.append([
+                r.http.account.name,
+                r.http.label,
+                r.http.url,
+                r.get_status_display(),
+                r.response_code if r.response_code is not None else '',
+                f"{r.response_time:.3f}" if r.response_time is not None else '',
+                r.error_message or '',
+                r.checked_at.strftime('%Y-%m-%d %H:%M:%S'),
+            ])
+        except Exception as e:
+            print(f"Error appending row: {e}")
+            continue
     response = HttpResponse(
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     filename = 'monitor_result.xlsx'
