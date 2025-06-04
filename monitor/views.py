@@ -11,6 +11,7 @@ from django.http import JsonResponse, HttpResponse
 import json
 import httpx
 import openpyxl
+import csv
 
 
 @login_required
@@ -274,9 +275,9 @@ def http_list_excel(request, account_id=None):
 
 
 @login_required
-def monitor_result_excel(request, http_id=None):
+def monitor_result_csv(request, http_id=None):
     """
-    모니터링 결과를 엑셀로 다운로드
+    모니터링 결과를 CSV로 다운로드
     """
     if http_id is None:
         http = None
@@ -301,18 +302,20 @@ def monitor_result_excel(request, http_id=None):
             Q(error_message__icontains=kw)
         ).distinct()
 
-    # 최대 100만개까지만 엑셀로 저장
-    results = results[:10000]
+    # 최대 100만개까지만 CSV로 저장
+    results = results[:1000000]
 
-    wb = openpyxl.Workbook()
-    ws = wb.active
-    ws.title = '모니터링결과'
+    response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
+    filename = 'monitor_result.csv'
+    response['Content-Disposition'] = f'attachment; filename={filename}'
+
+    writer = csv.writer(response)
     headers = ['Account', 'Label', 'URL',
                '상태', '응답코드', '응답시간', '오류메시지', '검사일시']
-    ws.append(headers)
+    writer.writerow(headers)
     for r in results:
         try:
-            ws.append([
+            writer.writerow([
                 r.http.account.name,
                 r.http.label,
                 r.http.url,
@@ -323,11 +326,6 @@ def monitor_result_excel(request, http_id=None):
                 r.checked_at.strftime('%Y-%m-%d %H:%M:%S'),
             ])
         except Exception as e:
-            print(f"Error appending row: {e}")
+            print(f"Error writing row: {e}")
             continue
-    response = HttpResponse(
-        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    filename = 'monitor_result.xlsx'
-    response['Content-Disposition'] = f'attachment; filename={filename}'
-    wb.save(response)
     return response

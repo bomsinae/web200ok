@@ -14,9 +14,9 @@
       {% if abnormal_only %}전체 보기{% else %}오류/비정상만 보기{% endif %}
     </button>
     {% if http %}
-      <a href="{% url 'monitor:monitor_result_excel' http.id %}?kw={{ kw }}{% if abnormal_only %}&abnormal_only=1{% endif %}" class="btn btn-sm btn-success ms-2">엑셀 다운로드</a>
+      <a href="{% url 'monitor:monitor_result_csv' http.id %}?kw={{ kw }}{% if abnormal_only %}&abnormal_only=1{% endif %}" class="btn btn-sm btn-success ms-2">CSV 다운로드</a>
     {% else %}
-      <a href="{% url 'monitor:monitor_result_excel' %}?kw={{ kw }}{% if abnormal_only %}&abnormal_only=1{% endif %}" class="btn btn-sm btn-success ms-2">엑셀 다운로드</a>
+      <a href="{% url 'monitor:monitor_result_csv' %}?kw={{ kw }}{% if abnormal_only %}&abnormal_only=1{% endif %}" class="btn btn-sm btn-success ms-2">CSV 다운로드</a>
     {% endif %}
   </div>
 </div>

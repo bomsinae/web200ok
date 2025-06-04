@@ -4,7 +4,7 @@ from .views import http_list
 from .views import http_list_excel
 from .views import monitor_result
 from .views import register_monitoring_url
-from .views import monitor_result_excel
+from .views import monitor_result_csv
 
 
 app_name = 'monitor'
@@ -22,8 +22,8 @@ urlpatterns = [
     path('register_monitoring_url/', register_monitoring_url,
          name='register_monitoring_url'),
 
-    path('monitor_result_excel/', monitor_result_excel,
-         name='monitor_result_excel'),
-    path('monitor_result_excel/<int:http_id>/',
-         monitor_result_excel, name='monitor_result_excel'),
+    path('monitor_result_csv/', monitor_result_csv,
+         name='monitor_result_csv'),
+    path('monitor_result_csv/<int:http_id>/',
+         monitor_result_csv, name='monitor_result_csv'),
 ]
