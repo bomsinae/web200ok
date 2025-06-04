@@ -10,6 +10,13 @@
     {% endif %}
     HTTPs ({{ active_http_list }}/{{ http_list_count }}개)
   </div>
+  <div>
+    {% if account %}
+      <a href="{% url 'monitor:http_list_excel' account.id %}{% if kw %}?kw={{ kw }}{% endif %}" class="btn btn-sm btn-success">엑셀 다운로드</a>
+    {% else %}
+      <a href="{% url 'monitor:http_list_excel' %}{% if kw %}?kw={{ kw }}{% endif %}" class="btn btn-sm btn-success">엑셀 다운로드</a>
+    {% endif %}
+  </div>
 </div>
 <div>
   <div class="d-none d-lg-block">

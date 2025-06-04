@@ -7,9 +7,10 @@ from .models import Http, HttpResult
 from cf_account.models import Account
 from .forms import HttpForm
 from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 import json
 import httpx
+import openpyxl
 
 
 @login_required
@@ -226,3 +227,103 @@ def register_monitoring_url(request):
             return JsonResponse({'message': 'URL not found, nothing to delete'}, status=200)
     else:
         return JsonResponse({'error': 'cname_flag must be YES or NO'}, status=400)
+
+
+@login_required
+def http_list_excel(request, account_id=None):
+    """
+    HTTP 모니터링 URL 목록을 엑셀로 다운로드
+    """
+    kw = request.GET.get('kw', '')
+    if account_id:
+        account = get_object_or_404(Account, pk=account_id)
+        http_list = Http.objects.filter(
+            account_id=account_id).order_by('-created_at')
+    else:
+        http_list = Http.objects.all().order_by('-created_at')
+    if kw:
+        http_list = http_list.filter(
+            Q(label__icontains=kw) |
+            Q(url__icontains=kw) |
+            Q(keyword__icontains=kw)
+        ).distinct()
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = 'HTTPs'
+    # 헤더
+    headers = ['Account', 'Label', 'URL', 'Keyword',
+               'Max Response Time', 'Active', 'Created At']
+    ws.append(headers)
+    for http in http_list:
+        ws.append([
+            http.account.name,
+            http.label,
+            http.url,
+            http.keyword,
+            http.max_response_time,
+            'Y' if http.is_active else 'N',
+            http.created_at.strftime('%Y-%m-%d %H:%M'),
+        ])
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    filename = 'https_list.xlsx'
+    response['Content-Disposition'] = f'attachment; filename={filename}'
+    wb.save(response)
+    return response
+
+
+@login_required
+def monitor_result_excel(request, http_id=None):
+    """
+    모니터링 결과를 엑셀로 다운로드
+    """
+    if http_id is None:
+        http = None
+        results = HttpResult.objects.all().order_by('-checked_at')
+    else:
+        http = get_object_or_404(Http, pk=http_id)
+        results = HttpResult.objects.filter(http=http).order_by('-checked_at')
+
+    abnormal_only = request.GET.get('abnormal_only')
+    if abnormal_only:
+        results = results.exclude(status='success')
+
+    kw = request.GET.get('kw', '')
+    if kw:
+        results = results.filter(
+            Q(http__account__name__icontains=kw) |
+            Q(http__label__icontains=kw) |
+            Q(http__url__icontains=kw) |
+            Q(http__keyword__icontains=kw) |
+            Q(status__icontains=kw) |
+            Q(response_code__icontains=kw) |
+            Q(error_message__icontains=kw)
+        ).distinct()
+
+    # 최대 100만개까지만 엑셀로 저장
+    results = results[:1000000]
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = '모니터링결과'
+    headers = ['Account', 'Label', 'URL',
+               '상태', '응답코드', '응답시간', '오류메시지', '검사일시']
+    ws.append(headers)
+    for r in results:
+        ws.append([
+            r.http.account.name,
+            r.http.label,
+            r.http.url,
+            r.get_status_display(),
+            r.response_code if r.response_code is not None else '',
+            f"{r.response_time:.3f}" if r.response_time is not None else '',
+            r.error_message or '',
+            r.checked_at.strftime('%Y-%m-%d %H:%M:%S'),
+        ])
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    filename = 'monitor_result.xlsx'
+    response['Content-Disposition'] = f'attachment; filename={filename}'
+    wb.save(response)
+    return response
