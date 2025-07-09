@@ -53,5 +53,6 @@ class HttpResult(models.Model):
         indexes = [
             models.Index(fields=['http', '-checked_at']),
             models.Index(fields=['status']),
-            models.Index(fields=['http', 'status', '-checked_at']),
+            # copilot이 필요없다고 함.
+            # models.Index(fields=['http', 'status', '-checked_at']),
         ]
