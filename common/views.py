@@ -15,28 +15,28 @@ from telegram import Bot
 @login_required
 def main(request):
     """
-    비상정적인 페이지와 꺼저있는 페이지 보여주기.
+    비정상적인 페이지와 꺼져있는 페이지 보여주기. (성능 최적화 버전)
     """
+    from django.db.models import Window, F
+    from django.db.models.functions import RowNumber
 
-    # 각 URL의 마지막 모니터링 결과를 가져오기 위한 쿼리
-    from django.db.models import Max, Subquery, OuterRef
-
-    # 각 HTTP URL별 가장 최근 체크 시간 구하기
-    latest_checks = HttpResult.objects.filter(
-        http=OuterRef('http')
-    ).order_by('-checked_at').values('id')[:1]
-
-    # 위에서 구한 최근 체크 결과만 가져오기
-    latest_results = HttpResult.objects.filter(
-        id__in=Subquery(latest_checks)
-    )
-
-    # 그 중에서 status가 'success'가 아닌 것만 필터링
-    http_results = latest_results.exclude(
-        status='success').order_by('-checked_at')
+    # Window Function을 사용한 최적화된 쿼리
+    # 각 HTTP별 가장 최근 결과 중 비정상만 가져오기
+    http_results = HttpResult.objects.select_related('http', 'http__account').annotate(
+        row_number=Window(
+            expression=RowNumber(),
+            partition_by=[F('http')],
+            order_by=F('checked_at').desc()
+        )
+    ).filter(
+        row_number=1,  # 각 HTTP별 가장 최근 결과만
+        status__in=['timeout', 'keyword_not_found',
+                    'http_error', 'connection_error', 'other_error']
+    ).order_by('-checked_at')
 
     # 모니터링이 꺼져 있는 URL을 가져오기
-    http_off_list = Http.objects.filter(is_active=False)
+    http_off_list = Http.objects.filter(
+        is_active=False).select_related('account')
 
     context = {
         'http_results': http_results,
@@ -141,3 +141,37 @@ def abnormal_url_excel_download(request):
     response['Content-Disposition'] = 'attachment; filename="abnormal_url_list.xlsx"'
     wb.save(response)
     return response
+
+
+@login_required
+def main_alternative(request):
+    """
+    Raw SQL을 사용한 더 빠른 버전 (필요시 사용)
+    """
+    # Raw SQL로 최적화된 쿼리
+    sql = """
+    SELECT hr.*, h.label, h.url, a.name as account_name
+    FROM monitor_httpresult hr
+    INNER JOIN monitor_http h ON hr.http_id = h.id
+    INNER JOIN cf_account_account a ON h.account_id = a.id
+    INNER JOIN (
+        SELECT http_id, MAX(checked_at) as max_checked_at
+        FROM monitor_httpresult
+        GROUP BY http_id
+    ) latest ON hr.http_id = latest.http_id AND hr.checked_at = latest.max_checked_at
+    WHERE hr.status != 'success'
+    ORDER BY hr.checked_at DESC
+    """
+
+    http_results = HttpResult.objects.raw(sql)
+
+    # 모니터링이 꺼져 있는 URL
+    http_off_list = Http.objects.filter(
+        is_active=False).select_related('account')
+
+    context = {
+        'http_results': http_results,
+        'http_off_list': http_off_list,
+    }
+
+    return render(request, 'common/main.html', context)

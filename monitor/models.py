@@ -51,7 +51,8 @@ class HttpResult(models.Model):
         verbose_name = "HTTP 모니터링 결과"
         verbose_name_plural = "HTTP 모니터링 결과"
         indexes = [
-            models.Index(fields=['http', '-checked_at']),
-            models.Index(fields=['status']),
-            models.Index(fields=['http', 'status', '-checked_at']),
+            models.Index(fields=['http', '-checked_at',
+                         'status'], name='http_checked_status_idx'),
+            models.Index(fields=['-checked_at'], name='checked_at_desc_idx'),
+            models.Index(fields=['status'], name='status_idx'),
         ]
