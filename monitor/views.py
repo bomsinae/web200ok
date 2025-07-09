@@ -220,7 +220,7 @@ def register_monitoring_url(request):
         http.save()
         return JsonResponse({'message': 'URL registered successfully'}, status=200)
     elif cname_flag == 'NO':
-        qs = Http.objects.filter(url=url)
+        qs = Http.objects.filter(label=zone_name)
         if qs.exists():
             qs.delete()
             return JsonResponse({'message': 'URL deleted successfully'}, status=200)
