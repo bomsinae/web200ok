@@ -17,18 +17,17 @@ def main(request):
     """
     비정상적인 페이지와 꺼져있는 페이지 보여주기. (성능 최적화 버전)
     """
-    from django.db.models import Window, F
-    from django.db.models.functions import RowNumber
+    from django.db.models import Subquery, OuterRef
 
-    # Window Function을 사용한 최적화된 쿼리
-    # 각 HTTP별 가장 최근 결과를 가져온 후, 그 중 비정상인 것만 필터링
-    latest_results = HttpResult.objects.select_related('http', 'http__account').annotate(
-        row_number=Window(
-            expression=RowNumber(),
-            partition_by=[F('http')],
-            order_by=F('checked_at').desc()
-        )
-    ).filter(row_number=1)  # 각 HTTP별 가장 최근 결과만
+    # 각 HTTP별 가장 최근 결과의 ID를 구하기
+    latest_result_ids = HttpResult.objects.filter(
+        http=OuterRef('pk')
+    ).order_by('-checked_at').values('id')[:1]
+
+    # 각 HTTP별 가장 최근 결과만 가져오기
+    latest_results = HttpResult.objects.filter(
+        id__in=Subquery(latest_result_ids)
+    ).select_related('http', 'http__account')
 
     # 그 중에서 status가 success가 아닌 것만 필터링
     http_results = latest_results.exclude(
