@@ -51,11 +51,7 @@ class HttpResult(models.Model):
         verbose_name = "HTTP 모니터링 결과"
         verbose_name_plural = "HTTP 모니터링 결과"
         indexes = [
-            # Subquery 최적화: http별 최신 결과 조회 (가장 중요)
-            models.Index(fields=['http', '-checked_at'],
-                         name='http_checked_desc_idx'),
-            # 전체 최신 결과 정렬 최적화
-            models.Index(fields=['-checked_at'], name='checked_at_desc_idx'),
-            # status 필터링 최적화
-            models.Index(fields=['status'], name='status_idx'),
+            models.Index(fields=['http', '-checked_at']),
+            models.Index(fields=['status']),
+            models.Index(fields=['http', 'status', '-checked_at']),
         ]
