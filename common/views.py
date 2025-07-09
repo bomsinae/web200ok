@@ -21,18 +21,18 @@ def main(request):
     from django.db.models.functions import RowNumber
 
     # Window Function을 사용한 최적화된 쿼리
-    # 각 HTTP별 가장 최근 결과 중 비정상만 가져오기
-    http_results = HttpResult.objects.select_related('http', 'http__account').annotate(
+    # 각 HTTP별 가장 최근 결과를 가져온 후, 그 중 비정상인 것만 필터링
+    latest_results = HttpResult.objects.select_related('http', 'http__account').annotate(
         row_number=Window(
             expression=RowNumber(),
             partition_by=[F('http')],
             order_by=F('checked_at').desc()
         )
-    ).filter(
-        row_number=1,  # 각 HTTP별 가장 최근 결과만
-        status__in=['timeout', 'keyword_not_found',
-                    'http_error', 'connection_error', 'other_error']
-    ).order_by('-checked_at')
+    ).filter(row_number=1)  # 각 HTTP별 가장 최근 결과만
+
+    # 그 중에서 status가 success가 아닌 것만 필터링
+    http_results = latest_results.exclude(
+        status='success').order_by('-checked_at')
 
     # 모니터링이 꺼져 있는 URL을 가져오기
     http_off_list = Http.objects.filter(
