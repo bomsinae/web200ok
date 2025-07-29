@@ -6,7 +6,7 @@ from django.views.generic import ListView, UpdateView, DeleteView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import SignUpForm, UserUpdateForm
-from monitor.models import Http, HttpResult
+from monitor.models import Http, HttpResult, HttpLastResult
 import openpyxl
 from django.http import HttpResponse
 from telegram import Bot
@@ -18,21 +18,24 @@ def main(request):
     비상정적인 페이지와 꺼저있는 페이지 보여주기.
     """
 
-    # 각 URL의 마지막 모니터링 결과를 가져오기 위한 쿼리
-    from django.db.models import Max, Subquery, OuterRef
+    # # 각 URL의 마지막 모니터링 결과를 가져오기 위한 쿼리
+    # from django.db.models import Max, Subquery, OuterRef
 
-    # 각 HTTP URL별 가장 최근 체크 시간 구하기
-    latest_checks = HttpResult.objects.filter(
-        http=OuterRef('http')
-    ).order_by('-checked_at').values('id')[:1]
+    # # 각 HTTP URL별 가장 최근 체크 시간 구하기
+    # latest_checks = HttpResult.objects.filter(
+    #     http=OuterRef('http')
+    # ).order_by('-checked_at').values('id')[:1]
 
-    # 위에서 구한 최근 체크 결과만 가져오기
-    latest_results = HttpResult.objects.filter(
-        id__in=Subquery(latest_checks)
-    )
+    # # 위에서 구한 최근 체크 결과만 가져오기
+    # latest_results = HttpResult.objects.filter(
+    #     id__in=Subquery(latest_checks)
+    # )
 
-    # 그 중에서 status가 'success'가 아닌 것만 필터링
-    http_results = latest_results.exclude(
+    # # 그 중에서 status가 'success'가 아닌 것만 필터링
+    # http_results = latest_results.exclude(
+    #     status='success').order_by('-checked_at')
+
+    http_results = HttpLastResult.objects.exclude(
         status='success').order_by('-checked_at')
 
     # 모니터링이 꺼져 있는 URL을 가져오기
@@ -106,17 +109,20 @@ def abnormal_url_excel_download(request):
     """
     비정상 URL 리스트를 엑셀로 다운로드
     """
-    from django.db.models import Subquery, OuterRef
-    # 각 HTTP URL별 가장 최근 체크 시간 구하기
-    latest_checks = HttpResult.objects.filter(
-        http=OuterRef('http')
-    ).order_by('-checked_at').values('id')[:1]
-    # 위에서 구한 최근 체크 결과만 가져오기
-    latest_results = HttpResult.objects.filter(
-        id__in=Subquery(latest_checks)
-    )
-    # 그 중에서 status가 'success'가 아닌 것만 필터링
-    http_results = latest_results.exclude(
+    # from django.db.models import Subquery, OuterRef
+    # # 각 HTTP URL별 가장 최근 체크 시간 구하기
+    # latest_checks = HttpResult.objects.filter(
+    #     http=OuterRef('http')
+    # ).order_by('-checked_at').values('id')[:1]
+    # # 위에서 구한 최근 체크 결과만 가져오기
+    # latest_results = HttpResult.objects.filter(
+    #     id__in=Subquery(latest_checks)
+    # )
+    # # 그 중에서 status가 'success'가 아닌 것만 필터링
+    # http_results = latest_results.exclude(
+    #     status='success').order_by('-checked_at')
+
+    http_results = HttpLastResult.objects.exclude(
         status='success').order_by('-checked_at')
 
     wb = openpyxl.Workbook()

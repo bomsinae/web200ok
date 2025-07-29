@@ -7,7 +7,7 @@ import time
 import re
 from django.contrib.auth.models import User
 from django.conf import settings
-from .models import Http, HttpResult
+from .models import Http, HttpResult, HttpLastResult
 from telegram import Bot
 from datetime import timedelta
 
@@ -106,6 +106,15 @@ class HttpMonitoringService:
             response_code=response_code,
             response_time=response_time,
             error_message=error_message
+        )
+        HttpLastResult.objects.update_or_create(
+            http=http,
+            defaults={
+                'status': status,
+                'response_code': response_code,
+                'response_time': response_time,
+                'error_message': error_message,
+            }
         )
         # 모든 모니터링 결과를 로그로 남김
         logger.info(

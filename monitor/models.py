@@ -56,3 +56,16 @@ class HttpResult(models.Model):
             # copilot이 필요없다고 함.
             # models.Index(fields=['http', 'status', '-checked_at']),
         ]
+
+
+class HttpLastResult(models.Model):
+    http = models.OneToOneField(
+        Http, on_delete=models.CASCADE, related_name='last_result')
+    status = models.CharField(max_length=20, choices=HttpResult.STATUS_CHOICES)
+    response_code = models.IntegerField(null=True, blank=True)
+    response_time = models.FloatField(null=True, blank=True)
+    error_message = models.TextField(blank=True, null=True)
+    checked_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.http.label} - {self.status} at {self.checked_at}"
