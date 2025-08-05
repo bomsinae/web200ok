@@ -114,6 +114,7 @@ class HttpMonitoringService:
                 'response_code': response_code,
                 'response_time': response_time,
                 'error_message': error_message,
+                'checked_at': result.checked_at,
             }
         )
         # 모든 모니터링 결과를 로그로 남김

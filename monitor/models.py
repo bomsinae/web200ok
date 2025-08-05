@@ -65,7 +65,7 @@ class HttpLastResult(models.Model):
     response_code = models.IntegerField(null=True, blank=True)
     response_time = models.FloatField(null=True, blank=True)
     error_message = models.TextField(blank=True, null=True)
-    checked_at = models.DateTimeField(auto_now_add=True)
+    checked_at = models.DateTimeField()
 
     def __str__(self):
         return f"{self.http.label} - {self.status} at {self.checked_at}"
