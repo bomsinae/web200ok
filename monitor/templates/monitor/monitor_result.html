@@ -207,6 +207,11 @@ $(document).ready(function(){
   $(function () {
     $('[data-toggle="checked_date"]').tooltip()
   });
+
+  // 30초마다 자동 새로고침
+  setInterval(function() {
+    location.reload();
+  }, 30000); // 30초 = 30,000 밀리초
 });
 </script>
 {% endblock %}

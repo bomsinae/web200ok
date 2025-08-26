@@ -197,6 +197,11 @@ $(document).ready(function(){
     $('[data-toggle="create_date"]').tooltip()
   });
 
+  // 30초마다 자동 새로고침
+  setInterval(function() {
+    location.reload();
+  }, 30000); // 30초 = 30,000 밀리초
+
   // 드래그 앤 드랍 기능 (첫 페이지에서만 활성화)
   {% if http_list.number == 1 %}
   const sortableList = document.getElementById('sortable-list');
