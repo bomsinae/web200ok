@@ -41,6 +41,14 @@ source venv/bin/activate
 # 의존성 설치
 pip install -r requirements.txt
 
+# 중요!
+# src/ 디렉토리안의 아래 파일들을 열어서 'magellan' 문자열을 적절한 문자열로 변경한다.
+# elery-beat.service
+# celery-worker.service
+# logroate_web200ok
+# web200ok.conf
+# web200ok.sevice
+
 # nginx 설치하고 설정파일 복사하기
 sudo apt install nginx
 sudo cp -av src/web200ok_log_format.conf /etc/nginx/conf.d/
@@ -87,6 +95,9 @@ sudo systemctl enable --now celery-beat
 sudo systemctl enable --now celery-worker
 sudo systemctl enable --now web200ok
 sudo systemctl restart nginx
+
+# log lorate 설정 추가
+sudo cp -av src/logrotate_web200ok /etc/logroate.d/
 ```
 
 ## 사용 방법
