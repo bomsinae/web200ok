@@ -12,6 +12,7 @@ class Http(models.Model):
     keyword = models.CharField(max_length=255, blank=True)
     max_response_time = models.IntegerField()
     is_active = models.BooleanField(default=True)
+    sort_order = models.IntegerField(default=0, help_text="정렬 순서")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -27,9 +27,10 @@ def http_list(request, account_id=None):
         account = get_object_or_404(Account, pk=account_id)
         # 특정 계정의 HTTP 모니터링 URL 목록
         http_list = Http.objects.filter(
-            account_id=account_id).select_related('last_result').order_by('-created_at')
+            account_id=account_id).select_related('last_result').order_by('sort_order', '-created_at')
     else:
-        http_list = Http.objects.select_related('last_result').all().order_by('-created_at')
+        http_list = Http.objects.select_related(
+            'last_result').all().order_by('sort_order', '-created_at')
 
     if kw:
         http_list = http_list.filter(
@@ -175,6 +176,32 @@ def monitor_result(request, http_id=None):
     }
 
     return render(request, 'monitor/monitor_result.html', context)
+
+
+@csrf_exempt
+@login_required
+def update_http_order(request):
+    """
+    드래그 앤 드랍으로 HTTP 모니터링 순서 업데이트
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST method required'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        http_ids = data.get('http_ids', [])
+
+        if not http_ids:
+            return JsonResponse({'error': 'http_ids required'}, status=400)
+
+        # 순서 업데이트
+        for index, http_id in enumerate(http_ids):
+            Http.objects.filter(id=http_id).update(sort_order=index)
+
+        return JsonResponse({'message': 'Order updated successfully'}, status=200)
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 
 @csrf_exempt

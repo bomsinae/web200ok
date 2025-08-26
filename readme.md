@@ -36,14 +36,22 @@ cd web200ok
 
 # 가상환경 생성 및 활성화
 python -m venv .venv
-source venv/bin/activate  # Linux/Mac
-# venv\Scripts\activate  # Windows
+source venv/bin/activate
 
 # 의존성 설치
 pip install -r requirements.txt
 
+# nginx 설치하고 설정파일 복사하기
+sudo apt install nginx
+sudo cp -av src/web200ok_log_format.conf /etc/nginx/conf.d/
+sudo cp -av src/web200ok.conf /etc/nginx/sites-available
+sudo cp -av /etc/nginx/sites-available/web200ok.conf /etc/nginx/sites-enable/web200ok.conf
+
 # redis 설치
 sudo apt install redis redis-server
+
+# 서비스 파일 복사
+sudo cp -av src/*service /lib/systemd/system/
 
 # .env 파일 만들기
 vi .env
@@ -73,6 +81,12 @@ python manage.py createsuperuser
 
 # 개발 서버 실행
 python manage.py runserver
+
+# 서비스 실행
+sudo systemctl enable --now celery-beat
+sudo systemctl enable --now celery-worker
+sudo systemctl enable --now web200ok
+sudo systemctl restart nginx
 ```
 
 ## 사용 방법

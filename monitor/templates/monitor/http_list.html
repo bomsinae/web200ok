@@ -43,8 +43,9 @@
     </div>
   </div>
   {% if http_list %}
+  <div id="sortable-list">
   {% for http in http_list %}
-  <div class="row p-2 px-lg-0 m-0 border-bottom article-list rounded-lg align-items-center position-relative">
+  <div class="row p-2 px-lg-0 m-0 border-bottom article-list rounded-lg align-items-center position-relative sortable-item" data-http-id="{{ http.id }}">
     <div class="col-lg-8 col-md-12 col-sm-12 px-0 px-lg-3">
       <div class="row">
         {% if not account %}
@@ -112,6 +113,7 @@
     </div>
   </div>
   {% endfor %}
+  </div>
   {% else %}
   <div class="py-1 mx-1">등록된 URL이 없습니다.</div>
   {% endif %}
@@ -174,8 +176,11 @@
 </div>
 {% endblock %}
 {% block script %}
+<!-- SortableJS CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script type='text/javascript'>
 $(document).ready(function(){
+  // 기존 페이징 및 검색 기능
   $(".page-link").on('click', function() {
     $("#page").val($(this).data("page"));
     $("#searchForm").submit();
@@ -191,6 +196,88 @@ $(document).ready(function(){
   $(function () {
     $('[data-toggle="create_date"]').tooltip()
   });
+
+  // 드래그 앤 드랍 기능 (첫 페이지에서만 활성화)
+  {% if http_list.number == 1 %}
+  const sortableList = document.getElementById('sortable-list');
+  if (sortableList) {
+    const sortable = Sortable.create(sortableList, {
+      animation: 150,
+      ghostClass: 'sortable-ghost',
+      chosenClass: 'sortable-chosen',
+      dragClass: 'sortable-drag',
+      handle: '.sortable-item', // 전체 행을 드래그 핸들로 사용
+      onEnd: function (evt) {
+        // 순서가 변경되었을 때 서버에 업데이트 요청
+        const httpIds = [];
+        $('#sortable-list .sortable-item').each(function() {
+          httpIds.push($(this).data('http-id'));
+        });
+        
+        // AJAX로 순서 업데이트
+        $.ajax({
+          url: '{% url "monitor:update_http_order" %}',
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': $('[name=csrfmiddlewaretoken]').val(),
+            'Content-Type': 'application/json',
+          },
+          data: JSON.stringify({
+            http_ids: httpIds
+          }),
+          success: function(response) {
+            console.log('순서가 업데이트되었습니다.');
+          },
+          error: function(xhr, status, error) {
+            console.error('순서 업데이트 실패:', error);
+            // 실패시 원래 상태로 되돌리기
+            location.reload();
+          }
+        });
+      }
+    });
+  }
+  {% endif %}
 });
 </script>
+<style>
+/* 드래그 앤 드랍 스타일 */
+.sortable-ghost {
+  opacity: 0.4;
+}
+
+.sortable-chosen {
+  background-color: #f8f9fa;
+}
+
+.sortable-drag {
+  background-color: #e9ecef;
+}
+
+.sortable-item {
+  cursor: move;
+  transition: all 0.3s ease;
+}
+
+.sortable-item:hover {
+  background-color: #f8f9fa;
+}
+
+/* 드래그 핸들 표시 */
+.sortable-item::before {
+  content: "⋮⋮";
+  position: absolute;
+  left: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6c757d;
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.sortable-item:hover::before {
+  opacity: 1;
+}
+</style>
 {% endblock %}
