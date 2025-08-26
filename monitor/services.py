@@ -38,7 +38,7 @@ class HttpMonitoringService:
             response_code = response.status_code
             body_text = response.text
             response_time = time.time() - start_time
-            if response_code >= 500 and 'cloudflare' in body_text.lower():
+            if response_code >= 400:
                 status = 'http_error'
                 # HTML 태그 제거 후 빈 줄도 제거
                 text_only = re.sub('<[^<]+?>', '', response.text)
@@ -72,7 +72,7 @@ class HttpMonitoringService:
                 response_code = response.status_code
                 body_text = response.text
                 response_time = time.time() - start_time
-                if response_code >= 500 and 'cloudflare' in body_text.lower():
+                if response_code >= 400:
                     status = 'http_error'
                     # HTML 태그 제거 후 빈 줄도 제거
                     text_only = re.sub('<[^<]+?>', '', response.text)
@@ -122,6 +122,9 @@ class HttpMonitoringService:
             f"모니터링: {http.label} ({http.url}) - 상태: {status}, 응답코드: {response_code}, 응답시간: {response_time:.2f}s")
         return result
 
+
+'''
+여기는 필요없는 코들로 보임.
     @staticmethod
     def send_alert(result):
         """문제 HttpResult 1건에 대해 알림 전송 (오류 메시지 없이)"""
@@ -176,3 +179,4 @@ class HttpMonitoringService:
             for r in error_results:
                 HttpMonitoringService.send_alert(r)
         return results
+'''

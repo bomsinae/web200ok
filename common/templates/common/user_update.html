@@ -4,7 +4,7 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <div class="h5">
     <a href="{% url 'common:user' %}">User</a>
-    > {{ object.username }} 
+    > {{ object.username }}
     > 수정
   </div>
 </div>
@@ -14,44 +14,12 @@
     <div class="my-2">{{ object.username }}</div>
     <form action="" method="post">
       {% csrf_token %}
-      {% if request.user.is_staff %}
-        {{ form.as_p }}
-      {% else %}
-        {{ form.is_active.as_hidden }}
-        {{ form.first_name.label}}:
-        {{ form.first_name }}
-      {% endif %}
+      {{ form.as_p }}
       <div class="mt-3">
         <button type="submit" value="submit" class="btn btn-primary">수정하기</button>
-        {% if request.user.is_staff %}
         <a href="{% url 'common:user_delete' object.id %}" class="border btn btn-danger">삭제하기</a>
-        {% endif %}
       </div>
     </form>
-  </div>
-</div>
-<div class="row my-3 py-3 border-top">
-  <div class="col">
-    <div class="h5 mt-4 fw-bold">텔레그램 봇 알림 설정</div>
-    <div class="row">
-      <div class="col my-2">
-        <p class="m-1 fw-bold">PC에서 가입</p>
-        <p class="m-1"><a href="https://t.me/Samsung_SDS_SECaaS_Incident_bot" target="_blank">https://t.me/Samsung_SDS_SECaaS_Incident_bot</a>에 접속 후 시작을 누르기.
-      </div>
-    </div>
-    <div class="row">
-      <div class="col my-2">
-        <p class="m-1 fw-bold">모바일에서 가입</p>
-        <p class="m-1">텔레그램 앱에서 검색창에 "@Samsung_SDS_SECaaS_Incident_bot" 검색 후 채팅 시작
-      </div>
-    </div>
-    <div class="row">
-      <div class="col my-2">
-        <p class="m-1 fw-bold">텔레그램 ID 알아내기</p>
-        <p class="m-1">Samsung_SDS_SECaaS_Incident_bot에서 아무 메세지나 입력하면 ID를 알려줍니다.</p>
-        <p class="m-1">알아낸 ID를 이 페이지 위의 텔레그램 ID 입력란에 입력하고 수정하기 버튼으로 저장합니다.</p>
-      </div>
-    </div>
   </div>
 </div>
 {% endblock content %}

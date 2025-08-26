@@ -27,9 +27,9 @@ def http_list(request, account_id=None):
         account = get_object_or_404(Account, pk=account_id)
         # 특정 계정의 HTTP 모니터링 URL 목록
         http_list = Http.objects.filter(
-            account_id=account_id).order_by('-created_at')
+            account_id=account_id).select_related('last_result').order_by('-created_at')
     else:
-        http_list = Http.objects.all().order_by('-created_at')
+        http_list = Http.objects.select_related('last_result').all().order_by('-created_at')
 
     if kw:
         http_list = http_list.filter(

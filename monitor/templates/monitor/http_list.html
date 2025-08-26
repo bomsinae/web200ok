@@ -32,6 +32,7 @@
       </div>
       <div class="col-lg-4">
         <div class="row">
+          <div class="col text-center text-nowrap">상태</div>
           <div class="col text-center text-nowrap">키워드</div>
           <div class="col text-center text-nowrap">응답시간</div>
           <div class="col text-center text-nowrap">사용</div>
@@ -64,6 +65,19 @@
     </div>
     <div class="col-lg-4 col-md-12 col-sm-12 px-0 px-lg-3">
       <div class="row justify-content-between">
+        <div class="col text-center nickname">
+          {% if http.last_result %}
+            {% if http.last_result.status == 'success' %}
+              <span class="badge bg-success">{{ http.last_result.get_status_display }}</span>
+            {% elif http.last_result.status == 'http_error' or http.last_result.status == 'keyword_not_found' or http.last_result.status == 'timeout' or http.last_result.status == 'connection_error' %}
+              <span class="badge bg-danger">{{ http.last_result.get_status_display }}</span>
+            {% else %}
+              <span class="badge bg-warning">{{ http.last_result.get_status_display }}</span>
+            {% endif %}
+          {% else %}
+            <span class="badge bg-secondary">미확인</span>
+          {% endif %}
+        </div>
         <div class="col text-center nickname">
           {%if not http.keyword %}
           <span class="badge bg-secondary">없음</span>

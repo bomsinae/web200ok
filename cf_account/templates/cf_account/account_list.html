@@ -31,7 +31,7 @@
       <div class="row m-0">
         <div class="col">
           <a href="{% url 'cf_account:account_http_list' object.id %}">
-          {{ object.name }}
+            {{ object.name }}
           </a>
         </div>
       </div>
@@ -66,11 +66,9 @@
   <div class="py-1 mx-1">등록된 Account가 없습니다.</div>
   {% endif %}
 </div>
-{% if request.user.is_staff %}
 <div class="row my-3">
   <div class="col d-flex justify-content-end">
     <a href="{% url 'cf_account:account_create' %}" class="border btn btn-primary">Account 생성</a>
   </div>
 </div>
-{% endif %}
 {% endblock content %}

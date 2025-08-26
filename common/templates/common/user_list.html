@@ -14,7 +14,6 @@
       </div>
       <div class="col-lg-8">
         <div class="row">
-          <div class="col text-nowrap text-center">텔레그램 ID</div>
           <div class="col text-nowrap text-center">활성</div>
           <div class="col text-nowrap text-center">최근로그인</div>
           <div class="col text-nowrap text-center">등록일시</div>
@@ -33,7 +32,6 @@
     </div>
     <div class="col-lg-8 col-md-12 col-sm-12 px-0">
       <div class="row justify-content-between m-0">
-        <div class="col text-center">{{ object.first_name|default:"-" }}</div>
         <div class="col text-lg-center">
           {% if object.is_active %}
           <span data-feather="check-circle"></span>
@@ -52,11 +50,9 @@
           </div>
         </div>
         <div class="col-2 text-center">
-          {% if object.username == request.user.username or request.user.is_staff %}
           <a href="{% url 'common:user_update' object.id %}">
             <span data-feather="settings"></span>
           </a>
-          {% endif %}
         </div>
       </div>
     </div>

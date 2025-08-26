@@ -147,6 +147,9 @@ CSRF_TRUSTED_ORIGINS = [site.strip()
 # Telegram Settings
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 
+# Teams Settings
+TEAMS_WEBHOOK = os.getenv('TEAMS_WEBHOOK')
+
 # Celery Settings
 CELERY_BROKER_URL = 'redis://localhost:6379/0'  # Redis를 브로커로 사용
 CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
@@ -158,9 +161,9 @@ CELERY_TIMEZONE = TIME_ZONE
 # Celery Beat Schedule - crontab 형식 사용
 
 CELERY_BEAT_SCHEDULE = {
-    'run-monitoring-all-every-5-minutes': {
+    'run-monitoring-all-every-1-minutes': {
         'task': 'monitor.tasks.run_monitoring_all',
-        'schedule': crontab(minute='*/5'),
+        'schedule': crontab(minute='*'),
     },
 }
 
