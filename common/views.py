@@ -18,23 +18,6 @@ def main(request):
     비상정적인 페이지와 꺼저있는 페이지 보여주기.
     """
 
-    # # 각 URL의 마지막 모니터링 결과를 가져오기 위한 쿼리
-    # from django.db.models import Max, Subquery, OuterRef
-
-    # # 각 HTTP URL별 가장 최근 체크 시간 구하기
-    # latest_checks = HttpResult.objects.filter(
-    #     http=OuterRef('http')
-    # ).order_by('-checked_at').values('id')[:1]
-
-    # # 위에서 구한 최근 체크 결과만 가져오기
-    # latest_results = HttpResult.objects.filter(
-    #     id__in=Subquery(latest_checks)
-    # )
-
-    # # 그 중에서 status가 'success'가 아닌 것만 필터링
-    # http_results = latest_results.exclude(
-    #     status='success').order_by('-checked_at')
-
     http_results = HttpLastResult.objects.exclude(
         status='success').order_by('-checked_at')
 
@@ -53,21 +36,6 @@ def signup_success(request):
     return render(request, 'registration/signup_success.html')
 
 
-async def send_telegram(message):
-    TELEGRAM_TOKEN = "7513739190:AAFjoeDKBUxO_-5pl1Vcn7dY4_3hawDqdd4"
-    CHAT_ID = 412105130
-    bot = Bot(TELEGRAM_TOKEN)
-    try:
-        await bot.send_message(
-            chat_id=CHAT_ID,
-            text=message,
-            parse_mode="HTML"
-        )
-        print(f"텔레그램 메시지 전송 성공: {message}")
-    except Exception as e:
-        print(f"텔레그램 전송 오류: {e}")
-
-
 def signup(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST)
@@ -76,9 +44,6 @@ def signup(request):
             user.set_password(form.cleaned_data['password'])  # 비밀번호 설정
             user.is_active = False  # 관리자 승인이 필요하도록 비활성화
             user.save()
-            # 가입 후 관리자에게 텔레그램(412105130)으로 알림을 보내는 로직 추가
-            asyncio.run(send_telegram(
-                f"[URL모니터 회원가입 요청]\nID: {user.username}"))
             return redirect('common:signup_success')  # 성공 페이지로 리디렉션
     else:
         form = SignUpForm()
