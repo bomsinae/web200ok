@@ -25,7 +25,9 @@ class SignUpForm(forms.ModelForm):
 class UserUpdateForm(forms.ModelForm):
     is_active = forms.BooleanField(required=False, label="사용자 활성화", widget=forms.CheckboxInput(
         attrs={'class': 'form-check-input'}))  # 활성화 체크박스
+    first_name = forms.CharField(required=False, label="텔레그램 ID",
+                                 widget=forms.TextInput(attrs={'class': 'form-control'}))
 
     class Meta:
         model = User
-        fields = ['is_active']
+        fields = ['is_active', 'first_name']

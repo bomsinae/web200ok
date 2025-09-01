@@ -4,6 +4,9 @@ from .models import Http, HttpResult
 import logging
 import asyncio
 import httpx
+from asgiref.sync import sync_to_async
+from django.contrib.auth.models import User
+from telegram import Bot
 from django.conf import settings
 import json
 
@@ -28,6 +31,26 @@ def check_http_task(http_id):
     except Exception as e:
         logger.error(f"check_http_task 오류: {str(e)}")
         return {'id': http_id, 'status': 'other_error', 'error': str(e)}
+
+
+async def send_telegram_bulk(messages, batch_size=10, delay=1):
+    users = await sync_to_async(list)(User.objects.exclude(first_name=''))
+    tasks = []
+    for message in messages:
+        for user in users:
+            chat_id = user.first_name
+            bot = Bot(token=settings.TELEGRAM_TOKEN)
+            tasks.append(bot.send_message(chat_id=chat_id,
+                                          text=message, parse_mode="HTML"))
+        # 배치 전송
+        for i in range(0, len(tasks), batch_size):
+            batch = tasks[i:i+batch_size]
+            results = await asyncio.gather(*batch, return_exceptions=True)
+            for result in results:
+                if isinstance(result, Exception):
+                    logger.error(f"텔레그램 알림 전송 중 오류: {result}")
+            if i + batch_size < len(tasks):
+                await asyncio.sleep(delay)
 
 
 async def send_teams_webhook(messages):
@@ -93,6 +116,7 @@ def process_monitoring_results(results):
             )
             messages.append(message)
         asyncio.run(send_teams_webhook(messages))
+        asyncio.run(send_telegram_bulk(messages))
 
     logger.info(
         f"process_monitoring_results 병렬 실행 완료: {len(results)}건 처리, 오류 {error_count}건")

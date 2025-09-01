@@ -88,6 +88,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        'OPTIONS': {
+            # WAL 모드 최적화 설정
+            'init_command': "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA cache_size=1000; PRAGMA temp_store=memory; PRAGMA mmap_size=268435456;",
+        },
     }
 }
 
