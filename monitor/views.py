@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect
-from .models import Http, HttpResult
+from .models import Http, HttpResult, HttpLastResult
 from cf_account.models import Account
 from .forms import HttpForm
 from django.views.decorators.csrf import csrf_exempt
@@ -46,6 +46,11 @@ def http_list(request, account_id=None):
     paginator = Paginator(http_list, per_page)
     page_obj = paginator.get_page(page)
 
+    # 비정상 URL 갯수 계산하고 넘으면 사운드 나오게.
+    http_results = HttpLastResult.objects.exclude(
+        status='success').order_by('-checked_at')
+    abnormal_count = http_results.count()
+
     context = {
         'http_list': page_obj,
         'page': page,
@@ -54,6 +59,7 @@ def http_list(request, account_id=None):
         'account': account if account_id else None,
         'http_list_count': http_list_count,
         'active_http_list': active_http_list,
+        'abnormal_count': abnormal_count,
     }
 
     return render(request, 'monitor/http_list.html', context)

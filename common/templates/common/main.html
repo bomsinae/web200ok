@@ -1,8 +1,15 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block content %}
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <div class="h5">Main</div>
 </div>
+
+<!-- 숨겨진 오디오 요소 -->
+<audio id="alertAudio" preload="auto" style="display: none;">
+  <source src="{% static 'check_the_cloudflare_dashboard.m4a' %}" type="audio/mp4">
+  Your browser does not support the audio element.
+</audio>
 
 <div>
   <ul class="nav nav-tabs" id="myTab">
@@ -209,6 +216,24 @@ function copyToClipboard(text) {
       console.error('클립보드 복사 실패:', err);
     });
 }
+
+// 비정상 모니터링 결과가 2개 이상일 때 오디오 재생
+function checkAndPlayAlert() {
+  const abnormalCount = {{ abnormal_count }};
+  if (abnormalCount >= 2) {
+    const audio = document.getElementById('alertAudio');
+    if (audio) {
+      audio.play().catch(err => {
+        console.log('오디오 재생 실패 (사용자 상호작용 필요):', err);
+      });
+    }
+  }
+}
+
+// 페이지 로드 시 알림 체크
+document.addEventListener('DOMContentLoaded', function() {
+  checkAndPlayAlert();
+});
 
 // 30초마다 자동 새로고침
 setInterval(function() {

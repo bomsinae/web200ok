@@ -24,9 +24,13 @@ def main(request):
     # 모니터링이 꺼져 있는 URL을 가져오기
     http_off_list = Http.objects.filter(is_active=False)
 
+    # 비정상 결과 개수 계산
+    abnormal_count = http_results.count()
+
     context = {
         'http_results': http_results,
         'http_off_list': http_off_list,
+        'abnormal_count': abnormal_count,
     }
 
     return render(request, 'common/main.html', context)
