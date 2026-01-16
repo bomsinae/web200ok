@@ -9,16 +9,59 @@ from django.contrib.auth.models import User
 from telegram import Bot
 from django.conf import settings
 import json
+import time
+import random
+from django.db import transaction, OperationalError
 
 logger = logging.getLogger(__name__)
+
+
+def db_retry(max_retries=3, base_delay=0.1):
+    """데이터베이스 락 오류 시 재시도하는 데코레이터"""
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            for attempt in range(max_retries):
+                try:
+                    return func(*args, **kwargs)
+                except OperationalError as e:
+                    if "database is locked" in str(e).lower() and attempt < max_retries - 1:
+                        # 지수 백오프 + 랜덤 지터
+                        delay = base_delay * \
+                            (2 ** attempt) + random.uniform(0, 0.1)
+                        logger.warning(
+                            f"Database locked, retrying in {delay:.2f}s (attempt {attempt + 1}/{max_retries})")
+                        time.sleep(delay)
+                        continue
+                    else:
+                        raise
+                except Exception as e:
+                    raise
+            return None
+        return wrapper
+    return decorator
 
 
 @shared_task
 def check_http_task(http_id):
     """단일 URL 모니터링 (병렬용)"""
+    @db_retry(max_retries=5, base_delay=0.1)
+    def get_http_with_retry():
+        return Http.objects.get(id=http_id)
+
+    @db_retry(max_retries=5, base_delay=0.1)
+    def save_result_with_retry(http_obj):
+        with transaction.atomic():
+            return HttpMonitoringService.check_http(http_obj)
+
     try:
-        http = Http.objects.get(id=http_id)
-        result = HttpMonitoringService.check_http(http)
+        http = get_http_with_retry()
+        if http is None:
+            return {'id': http_id, 'status': 'other_error', 'error': 'Failed to get HTTP object after retries'}
+
+        result = save_result_with_retry(http)
+        if result is None:
+            return {'id': http_id, 'status': 'other_error', 'error': 'Failed to save result after retries'}
+
         return {
             'id': http.id,
             'account_name': http.account.name,
@@ -28,6 +71,14 @@ def check_http_task(http_id):
             'response_code': result.response_code,
             'response_time': result.response_time,
         }
+    except OperationalError as e:
+        if "database is locked" in str(e).lower():
+            logger.error(
+                f"check_http_task Database locked error after retries: {str(e)}")
+            return {'id': http_id, 'status': 'other_error', 'error': f'Database locked: {str(e)}'}
+        else:
+            logger.error(f"check_http_task Database error: {str(e)}")
+            return {'id': http_id, 'status': 'other_error', 'error': str(e)}
     except Exception as e:
         logger.error(f"check_http_task 오류: {str(e)}")
         return {'id': http_id, 'status': 'other_error', 'error': str(e)}

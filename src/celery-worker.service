@@ -7,7 +7,7 @@ User=magellan
 Group=magellan
 WorkingDirectory=/home/magellan/Projects/web200ok
 Environment="PATH=/home/magellan/Projects/web200ok/.venv/bin"
-ExecStart=/home/magellan/Projects/web200ok/.venv/bin/celery -A config worker -l info -c 4
+ExecStart=/home/magellan/Projects/web200ok/.venv/bin/celery -A config worker -l info -c 2
 Restart=on-failure
 RestartSec=5
 
