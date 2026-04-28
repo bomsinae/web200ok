@@ -4,11 +4,11 @@ After=network.target redis.service celery-worker.service
 Requires=celery-worker.service
 
 [Service]
-User=magellan
-Group=magellan
-WorkingDirectory=/home/magellan/Projects/web200ok
-Environment="PATH=/home/magellan/Projects/web200ok/.venv/bin"
-ExecStart=/home/magellan/Projects/web200ok/.venv/bin/celery -A config beat -l info
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/Projects/web200ok
+Environment="PATH=/home/ubuntu/Projects/web200ok/.venv/bin"
+ExecStart=/home/ubuntu/Projects/web200ok/.venv/bin/celery -A config beat -l info
 Restart=on-failure
 RestartSec=5
 

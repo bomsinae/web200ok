@@ -1,4 +1,4 @@
-/home/magellan/Projects/web200ok/logs/server.log {
+/home/ubuntu/Projects/web200ok/logs/server.log {
     daily
     rotate 7
     compress
